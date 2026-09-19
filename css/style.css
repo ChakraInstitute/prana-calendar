@@ -1,0 +1,2469 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f6f5f2;
+  --card-bg: #ffffff;
+  --text: #23201c;
+  --muted: #6b6558;
+  --border: #e2ddd3;
+  --accent: #6a4fa3;
+  --left: #4f6fa3;
+  --right: #b9622e;
+  --error-bg: #fbe9e7;
+  --error-text: #8c2f22;
+  /* A dedicated color for "this is tappable" cues (Nitya/Nakshatra lines) —
+     deliberately distinct from --accent (used pervasively for buttons and
+     links) so these specific indicators read as a special, unmistakable
+     invitation to explore rather than blending into ordinary UI chrome. */
+  --tap-accent: #9c7a1f;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1a17;
+    --card-bg: #262420;
+    --text: #ece8e1;
+    --muted: #a49d8e;
+    --border: #3a362f;
+    --error-bg: #3a201c;
+    --error-text: #f2b6ab;
+    --tap-accent: #d9b448;
+  }
+}
+
+* { box-sizing: border-box; }
+
+/* Base font size bumped slightly (16px -> 17px) for better mobile
+   readability, per request. Every other size in this file is set in rem,
+   so this one change scales the whole app proportionally rather than
+   needing to be repeated element by element. */
+html {
+  font-size: 17px;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* The brand line is now the first, most prominent thing in the app — its
+   own header row, sized close to a heading (not "a small quiet line" any
+   more), in the same color as the Prana Calendar title (var(--text), not
+   the purple --accent) so the two read as one family. min-width: 0 lets it
+   actually wrap inside the flex row instead of overflowing/squeezing the
+   settings button. It's forced onto exactly two centered lines via a <br>
+   in the markup (no bullet/dash separator) rather than relying on wrapping,
+   so the split point never shifts with viewport width. */
+.brand-line {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  color: var(--text);
+  text-align: center;
+  min-width: 0;
+}
+
+/* The language toggle lives in its own row, right-aligned, ABOVE the brand
+   line rather than floated on top of it. An absolutely-positioned toggle
+   sharing the brand line's vertical band looked fine at one test width,
+   but "Rediscover Your Natural Rhythm" is wide enough that at almost any
+   narrower phone width (320-390px are the common ones) it wraps onto a
+   third line whose tail runs directly under the toggle text — an actual
+   visual overlap, not just tight spacing. Giving the toggle its own row in
+   normal document flow makes that overlap impossible at any width, and
+   lets the brand line go back to being centered on the full page width
+   like before the toggle was added. */
+.app-header.brand-header {
+  padding: 0.55rem 1rem 1.25rem;
+}
+
+.language-toggle {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.45rem;
+}
+.language-option {
+  background: none;
+  border: none;
+  padding: 0.15rem 0.1rem;
+  margin: 0;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1.4;
+}
+.language-option:hover {
+  color: var(--text);
+}
+.language-option.active {
+  color: var(--accent);
+  font-weight: 800;
+}
+.language-sep {
+  color: var(--border);
+  font-size: 0.7rem;
+}
+
+/* Icon-only "Follow:" row, moved to the very top of the app, directly
+   below the language toggle and above the InnerTuning brand line — right
+   -aligned to match the language toggle above it (NOT centered like the
+   brand line/title below). Reuses .social-links-row/.social-links-icons
+   for the icon layout but overrides both the link styling (icons now, not
+   text) and the row's own alignment (a single right-aligned line: label,
+   then icons, instead of the base class's centered label-above-icons
+   stack). */
+.top-social-links {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  text-align: right;
+}
+.top-social-links .social-links-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin: 0;
+}
+.top-social-links .social-links-icons {
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.top-social-links .social-links-icons a {
+  display: inline-flex;
+  color: var(--muted);
+}
+.top-social-links .social-links-icons a:hover {
+  color: var(--accent);
+}
+
+/* The Prana Calendar title block now lives inside the Today tab, after the
+   Shyamji portrait/signature — see index.html for the ordering. The extra
+   bottom padding (vs. the 0 it used to end on) gives clear air before the
+   Date card that follows it. */
+.today-title-block {
+  padding: 1.25rem 1.25rem 1.25rem;
+  text-align: center;
+}
+.today-title-block h1 { margin: 0 0 0.3rem; font-size: 1.5rem; }
+.subtitle { margin: 0; color: var(--muted); font-size: 0.85rem; }
+.today-title-block .subtitle { max-width: 32rem; margin-left: auto; margin-right: auto; }
+/* Two-line subtitle ("Ancient Wisdom, Modern Life" / "Aligning breath...")
+   — a small gap between the lines keeps them readable as two distinct
+   statements rather than running together. */
+.today-title-block .subtitle + .subtitle { margin-top: 0.3rem; }
+
+/* "What is the Prana Calendar?" is now a permanent title + a small
+   "Read more ›" toggle (see the full override block further down, near
+   the other .accordion-header rules) rather than a full-width accordion
+   bar, so it no longer needs the old flush-to-the-edges bleed trick —
+   it just sits centered like the H1/subtitle above it. */
+.what-is-prana-calendar-accordion {
+  margin: 0.9rem 0 0;
+  text-align: center;
+}
+
+.icon-button {
+  flex: none;
+  background: none;
+  border: none;
+  padding: 0.4rem;
+  border-radius: 8px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-button:hover { color: var(--accent); border-color: transparent; background: rgba(127, 127, 127, 0.14); }
+
+.tab-content {
+  padding: 0 1.25rem calc(5.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Must stay above .quiz-overlay (z-index 60) so the bottom nav remains
+     visible and tappable throughout the entire quiz flow — it's the only
+     way in or out now (see bindTabNav in app.js). Still below
+     #confirmDialogOverlay (70) so the exit-confirmation prompt renders on
+     top of the nav that triggered it. */
+  z-index: 65;
+}
+
+.bottom-nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0.55rem 0.25rem 0.5rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.bottom-nav-btn:hover { border-color: transparent; background: rgba(127, 127, 127, 0.1); }
+.bottom-nav-btn.active { color: var(--accent); }
+.bottom-nav-icon { display: flex; }
+.bottom-nav-label { font-weight: 500; }
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.mantra-note-card p {
+  margin: 0 0 0.85rem;
+  line-height: 1.55;
+}
+.mantra-note-card p:last-child { margin-bottom: 0; }
+.mantra-note-card h3 {
+  margin: 1.1rem 0 0.6rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.mantra-note-list {
+  margin: 0 0 0.85rem;
+  padding-left: 1.25rem;
+  line-height: 1.55;
+}
+.mantra-note-list li { margin-bottom: 0.45rem; }
+.mantra-note-list li:last-child { margin-bottom: 0; }
+
+.field-row { margin-bottom: 0.9rem; }
+.field-row label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+.field-row input {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.input-with-button { display: flex; gap: 0.5rem; }
+.input-with-button input { flex: 1; }
+
+/* Location card, tightened up — smaller padding, tighter field spacing,
+   slightly smaller type — now that it's one of several stacked cards
+   above the fold rather than the sole focus of the tab. Made noticeably
+   more compact per request: less card padding, smaller field padding,
+   and inputs no longer stretch to fill the whole card width — they're
+   clean, minimal fields sized to their content instead. */
+.location-card-compact {
+  padding: 0.75rem 0.9rem 0.95rem;
+}
+.location-card-compact h2 {
+  margin-bottom: 0.6rem;
+  font-size: 0.92rem;
+}
+.location-card-compact .field-row { margin-bottom: 0.45rem; }
+.location-card-compact .field-row label {
+  font-size: 0.76rem;
+  margin-bottom: 0.15rem;
+}
+.location-card-compact .field-row input {
+  padding: 0.35rem 0.55rem;
+  font-size: 0.88rem;
+}
+.location-card-compact .manual-fields .field-row input {
+  width: 11rem;
+  max-width: 100%;
+}
+/* IANA timezone names run long (e.g. "America/Argentina/Buenos_Aires") —
+   give that one field more room than lat/lon. */
+.location-card-compact .manual-fields .field-row:has(#tzInput) input {
+  width: 16rem;
+}
+.location-card-compact #citySearchBtn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+}
+.location-card-compact .manual-fields { margin-top: 0.3rem; }
+.location-card-compact .remember-row { font-size: 0.8rem; }
+.location-card-compact .link-button { font-size: 0.83rem; }
+
+/* The Date field now lives inside the same box as Location (see
+   index.html), using .location-card-compact's field-row/h2 styling like
+   everything else in that card. It just needs its own width — a native
+   date input doesn't need to stretch the full card width. */
+#dateInput {
+  width: 11rem;
+  max-width: 100%;
+}
+
+/* Location, Calculate, How-to-Use, and View Month now all live in ONE
+   combined card (see .location-card-compact above) — this thin top
+   divider is what separates those grouped blocks from each other in
+   place of what used to be separate card borders. */
+.location-combined-divider {
+  margin: 1.1rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.location-card-compact .how-to-use-accordion { margin-top: 0.9rem; }
+/* When there's no result yet, #resultContent is hidden — drop the divider
+   that would otherwise sit directly above How-to-Use with nothing visible
+   above it to divide from. */
+#resultContent[hidden] + .location-combined-divider { display: none; }
+
+/* Calculate button — centered, smaller, and sitting directly below the
+   location fields with minimal spacing (no divider line above it any
+   more) per request. */
+.calculate-btn-centered {
+  display: block;
+  width: fit-content;
+  margin: 0.5rem auto 0;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.82rem;
+}
+
+button {
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  padding: 0.55rem 1rem;
+}
+button:hover { border-color: var(--accent); }
+button:disabled { opacity: 0.6; cursor: default; }
+button:disabled:hover { border-color: var(--border); }
+
+#citySearchBtn { display: inline-flex; align-items: center; gap: 0.45rem; }
+
+.spinner {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: pc-spin 0.7s linear infinite;
+}
+/* The [hidden] attribute must win over the class's own `display`, or the
+   spinner stays visible even while hidden. */
+.spinner[hidden] { display: none; }
+@keyframes pc-spin { to { transform: rotate(360deg); } }
+
+.primary-button {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+.primary-button:hover { opacity: 0.92; }
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+  text-decoration: underline;
+}
+
+.status-text { font-size: 0.85rem; color: var(--muted); min-height: 1.2em; margin: 0.4rem 0; }
+
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+.share-btn {
+  font-weight: 600;
+}
+.share-copied-note {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.city-results { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.5rem; }
+.city-option {
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.9rem;
+}
+.city-option.selected {
+  border-color: var(--accent);
+  background: rgba(106, 79, 163, 0.08);
+}
+
+.manual-fields {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+}
+
+.error-box {
+  background: var(--error-bg);
+  color: var(--error-text);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Result card, made noticeably more compact per request — smaller card
+   padding, a smaller section heading, and a smaller (but still bold and
+   colored) nostril readout, since the full-size .card padding + a 1.6rem
+   headline made this card unnecessarily large relative to the others. */
+.result-card {
+  text-align: center;
+  padding: 0.9rem 1.1rem 1.1rem;
+}
+.result-card h2 {
+  font-size: 0.92rem;
+  margin-bottom: 0.5rem;
+}
+.nostril {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0.25rem 0 0;
+}
+.nostril.left { color: var(--left); }
+.nostril.right { color: var(--right); }
+.result-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.1rem 0 0;
+}
+.sanskrit { color: var(--muted); margin: 0.2rem 0 1rem; }
+
+.result-meta {
+  text-align: left;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 1rem;
+  font-size: 0.92rem;
+  margin: 0 0 1rem;
+}
+.result-meta dt { color: var(--muted); }
+.result-meta dd { margin: 0; }
+
+.result-details {
+  text-align: left;
+  font-size: 0.82rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.day-lord-card .day-lord { border-top: none; padding-top: 0; }
+.day-lord-card #dayLordDateLabel { margin: 0 0 0.75rem; }
+
+.day-lord {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.remember-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0.6rem 0;
+  cursor: pointer;
+}
+.remember-row input { margin: 0; }
+
+.day-lord-swatch {
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.day-lord-text p { margin: 0; }
+.day-lord-day { font-weight: 600; font-size: 0.95rem; }
+.day-lord-color { font-size: 0.82rem; color: var(--muted); margin-top: 0.1rem !important; }
+.day-lord-planet { font-size: 0.85rem; margin-top: 0.3rem !important; }
+.day-lord-mantra {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--accent);
+  margin-top: 0.2rem !important;
+}
+
+/* A subsection heading inside a .card — smaller and lighter than the card's
+   own h2, with its own top divider, for a card that groups more than one
+   labeled block (e.g. Color/Planet/Mantra followed by Moon Phases & Cosmic
+   Timing within the same card). */
+.card-subsection-header {
+  margin: 1.25rem 0 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.lunar-position-info {
+  /* The divider above this block now lives on .card-subsection-header
+     instead, so this no longer needs its own top border/spacing. */
+}
+.lunar-position-line {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+.lunar-position-line + .lunar-position-line { margin-top: 0.3rem; }
+
+/* The Nitya and Nakshatra lines are each tappable toggles (see
+   .lunar-tappable-toggle below) wrapping a .lunar-position-line span, each
+   followed by its own accordion — so the plain adjacent-sibling rule above
+   no longer reaches every line (current order: Paksha, Tithi, Nitya toggle +
+   accordion, Nakshatra toggle + accordion, Sidereal, Tropical). Give the
+   elements that immediately follow a non-.lunar-position-line sibling their
+   own explicit spacing; #lunarTropicalText doesn't need one of its own —
+   it directly follows #lunarSiderealText, so the adjacent-sibling rule
+   above already covers it. */
+#lunarNityaToggle,
+#lunarNakshatraToggle,
+#lunarSiderealText { margin-top: 0.3rem; }
+
+.lunar-tappable-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+/* An unmistakable invitation to explore — the text itself takes the
+   dedicated gold tap-accent color with a solid underline (not just a
+   subtle dotted one), so these two lines read as clearly interactive at a
+   glance, not as another plain fact alongside Paksha/Tithi/Sidereal. */
+.lunar-tappable-toggle .lunar-position-line {
+  color: var(--tap-accent);
+  font-weight: 600;
+  border-bottom: 1px solid var(--tap-accent);
+  padding-bottom: 1px;
+}
+.lunar-tappable-chevron {
+  display: inline-block;
+  color: var(--tap-accent);
+  font-weight: 700;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+.lunar-tappable-toggle:hover .lunar-position-line,
+.lunar-tappable-toggle:focus-visible .lunar-position-line {
+  border-bottom-width: 2px;
+}
+.lunar-tappable-toggle[aria-expanded="true"] .lunar-tappable-chevron {
+  transform: rotate(90deg);
+}
+
+.nitya-accordion {
+  margin-top: 0.6rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(127, 127, 127, 0.08);
+}
+.nitya-name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.nitya-vowel {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.nitya-description {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.nitya-scheme-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.nitya-scheme-btn {
+  font-size: 0.78rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.nitya-scheme-btn.selected {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.nitya-footnote {
+  margin: 0.75rem 0 0;
+  font-size: 0.76rem;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.result-nostril-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.info-btn {
+  flex: none;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.2rem;
+  border-radius: 999px;
+}
+.info-btn:hover { color: var(--accent); border-color: transparent; background: rgba(127, 127, 127, 0.14); }
+.info-btn[aria-expanded="true"] { color: var(--accent); }
+
+/* Nostril check-in tracking */
+
+/* Shared divider look — same border-top/spacing used both above the
+   "Was your nostril correct?" tracking question and (see .result-divider
+   below) between the nostril readout and the Share button/location info. */
+.nostril-tracking,
+.result-divider {
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+.nostril-tracking {
+  text-align: center;
+}
+
+.tracking-label {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.result-history-note {
+  margin: 1rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+}
+.result-history-note .result-history-link {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.tracking-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.track-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  line-height: 1;
+  border: none;
+  color: #fff;
+  padding: 0;
+}
+/* Both Today-tab tracking buttons now use the same `.toggle-btn` pattern as
+   the Practice-tab day popup below (see that comment) — neutral/grey until
+   selected, so these bare `.track-check`/`.track-x` rules only matter as a
+   fallback for a browser that somehow ignores the `.toggle-btn` class. */
+.track-check { background: #2f8f4e; }
+.track-check:hover { border-color: transparent; opacity: 0.9; }
+.track-x { background: #c0392b; }
+.track-x:hover { border-color: transparent; opacity: 0.9; }
+.track-btn[disabled] { cursor: default; opacity: 1; }
+.track-btn[disabled]:hover { opacity: 1; border-color: inherit; }
+
+/* Chilla tracker */
+
+.small-button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.9rem;
+  margin-top: 0.3rem;
+}
+.small-button:hover { border-color: transparent; opacity: 0.92; }
+
+/* The Today-tab "Find Your Mantra" entry point deliberately breaks from
+   the purple accent used everywhere else — a warm, distinct gold/cream so
+   it reads as its own special invitation rather than a routine action. */
+.chakra-quiz-cta-btn {
+  background: #d9a441;
+  color: #2b2013;
+  font-weight: 700;
+}
+.chakra-quiz-cta-btn:hover { background: #c8933a; opacity: 1; }
+@media (prefers-color-scheme: dark) {
+  .chakra-quiz-cta-btn { background: #caa257; color: #1b1a17; }
+  .chakra-quiz-cta-btn:hover { background: #b8923f; }
+}
+
+.chilla-pronunciation-note {
+  margin: 0 0 0.9rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Small hint line under "Start a Chilla" pointing to where progress is
+   tracked, per request — kept quiet/secondary so it doesn't compete with
+   the button above it. */
+.chilla-track-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.chilla-track-hint-link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.chilla-name-text {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0 0 0.2rem;
+}
+
+.chilla-streak-text {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--muted);
+  margin: 0 0 0.9rem;
+}
+
+.chilla-checkbox-row {
+  font-size: 1rem;
+  gap: 0.65rem;
+  margin: 0.6rem 0 0.9rem;
+}
+.chilla-checkbox-row input {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+#chillaActiveRow .link-button {
+  display: block;
+  margin-top: 0.3rem;
+}
+
+.link-button-danger {
+  color: #c0392b;
+}
+
+/* Chilla setup screen */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  z-index: 50;
+}
+/* Same rule as .spinner[hidden] above: an author-stylesheet `display`
+   always beats the browser's default `[hidden] { display: none }`, so
+   without this the overlay would show up the instant the page loads. */
+.modal-overlay[hidden] { display: none; }
+
+.modal-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+.modal-card label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+.chilla-name-input {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.modal-card .primary-button { margin-top: 0; }
+
+/* Reusable confirmation dialog — used for both deleting an Assessment
+   History result and exiting the quiz mid-way. */
+/* #confirmDialogOverlay must outrank .quiz-overlay's z-index (60) since it
+   can be opened from inside the quiz (the exit-quiz confirmation) as well
+   as from the Practice tab (the delete-result confirmation). */
+#confirmDialogOverlay { z-index: 70; }
+
+.confirm-dialog-card { max-width: 320px; }
+.confirm-dialog-message {
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--text);
+}
+.confirm-dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+.confirm-dialog-confirm-btn {
+  background: #c0392b;
+  color: #fff;
+  margin-top: 0;
+}
+.confirm-dialog-confirm-btn:hover { border-color: transparent; opacity: 0.92; }
+
+/* Practice tab — calendar */
+
+.calendar-card { padding-bottom: 1.25rem; }
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.calendar-month-label {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.calendar-header .icon-button {
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0.3rem 0.6rem;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.calendar-day,
+.calendar-day-empty {
+  aspect-ratio: 1 / 1;
+}
+
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0.2rem;
+  font-family: inherit;
+  color: var(--text);
+}
+.calendar-day:hover { border-color: var(--accent); }
+.calendar-day.today {
+  border-color: var(--accent);
+  font-weight: 700;
+}
+.calendar-day.future {
+  color: var(--muted);
+  opacity: 0.45;
+  cursor: default;
+}
+.calendar-day.future:hover { border-color: transparent; }
+
+.calendar-day-number { font-size: 0.85rem; line-height: 1; }
+
+.calendar-day-marks {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  min-height: 0.9rem;
+}
+
+.mark-check, .mark-x {
+  font-size: 0.7rem;
+  line-height: 1;
+  font-weight: 700;
+}
+.mark-check { color: #2f8f4e; }
+/* Three nostril-tracking states: green check = correct at sunrise, yellow X
+   with a black outline = incorrect but corrected, red X = incorrect and not
+   corrected. Legacy log entries saved before this three-state distinction
+   existed (plain 'x', no correction answer on file) render as the red
+   "not corrected" state — the safest default since we don't actually know. */
+.mark-x, .mark-x-not-corrected { color: #c0392b; }
+/* At the calendar's tiny glyph size (0.7rem), a text outline (text-stroke /
+   text-shadow) just reads as a blob — there isn't enough ink to spare. A
+   small solid badge (yellow fill, black border, black glyph) stays crisp
+   at any size and is what actually reads as "outlined" here. */
+.mark-x-corrected {
+  color: #000;
+  background: #f1c40f;
+  border: 1px solid #000;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.95rem;
+  height: 0.95rem;
+  font-size: 0.62rem;
+  line-height: 1;
+}
+
+.mark-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Month View (Today tab) — a plain testing/verification grid showing the
+   calculated nostril for every day of a month, independent of any logged
+   check-ins. Reuses the .calendar-grid/.calendar-day layout above, with
+   its own L/R nostril tint instead of check/X marks. */
+.month-view-status {
+  margin: 0.6rem 0 0;
+}
+.month-view-day {
+  border-radius: 8px;
+}
+.month-view-nostril-letter {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.month-view-day.month-view-left {
+  background: rgba(79, 111, 163, 0.14);
+}
+.month-view-day.month-view-left .month-view-nostril-letter { color: var(--left); }
+.month-view-day.month-view-right {
+  background: rgba(185, 98, 46, 0.14);
+}
+.month-view-day.month-view-right .month-view-nostril-letter { color: var(--right); }
+.month-view-day.month-view-error {
+  background: rgba(127, 127, 127, 0.12);
+}
+.month-view-day.month-view-error .month-view-nostril-letter { color: var(--muted); }
+/* Today AND the selected date (whatever's currently loaded into the Date
+   field above) both get the SAME outline treatment — that's the one
+   visual language reserved for "this is the day in focus". */
+.month-view-day.today,
+.month-view-day.month-view-selected {
+  border-color: var(--accent);
+}
+
+/* Anchor days (where a new/full-moon cycle begins) get a subtle, NEUTRAL
+   shaded fill on the square itself — deliberately not the accent purple,
+   so it never gets confused with the today/selected outline above. It
+   layers on top of (and mutes) whatever L/R tint is already there; the
+   L/R letter stays legible regardless. */
+.month-view-day {
+  position: relative;
+}
+.month-view-day.month-view-anchor {
+  background: rgba(127, 127, 127, 0.28);
+}
+
+/* New/full moon marker — the moon event's OWN local calendar day, which
+   can differ from the anchor day above (see pcComputeAnchor). Small
+   corner badge so it doesn't crowd the day number/letter already in the
+   cell. */
+.month-view-moon-emoji {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  font-size: 0.55rem;
+  line-height: 1;
+}
+
+.month-view-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.month-view-legend-swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 3px;
+  display: inline-block;
+}
+.month-view-legend-swatch.month-view-left { background: rgba(79, 111, 163, 0.35); }
+.month-view-legend-swatch.month-view-right { background: rgba(185, 98, 46, 0.35); }
+/* Matches .month-view-day.today/.month-view-selected — an outline only. */
+.month-view-legend-swatch.month-view-outline-swatch {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+/* Matches .month-view-day.month-view-anchor — a neutral shaded fill,
+   deliberately not the accent color, so it reads as distinct from the
+   outline swatch above. */
+.month-view-legend-swatch.month-view-anchor-swatch {
+  background: rgba(127, 127, 127, 0.4);
+}
+
+/* Month View card: collapsed by default, opened by tapping "View Month".
+   Reuses the same tappable-toggle chevron pattern as the Tithi/Nakshatra
+   lines, but as a full-width block since this is its own card. */
+.month-view-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+.month-view-toggle-label {
+  color: var(--tap-accent);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+.month-view-panel {
+  margin-top: 1rem;
+}
+
+/* Day-detail popup (Practice tab) */
+
+.day-popup-date {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+}
+
+.day-popup-section {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.day-popup-section .tracking-label { text-align: center; }
+.day-popup-section .tracking-buttons { justify-content: center; }
+
+/* The popup's ✓/✗ are a toggle, not an immediate action, so — unlike the
+   Today-tab buttons above — neither one is colored until it's actually the
+   selected answer. Cleared (nothing selected) has to look unmistakably
+   different from either answer: plain neutral gray, no tint at all. */
+.toggle-btn {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  color: var(--muted);
+}
+.toggle-btn:hover { opacity: 1; border-color: var(--muted); }
+
+.toggle-btn.track-check.selected {
+  background: #2f8f4e;
+  border-color: #2f8f4e;
+  color: #fff;
+}
+.toggle-btn.track-check.selected:hover { border-color: #2f8f4e; }
+
+.toggle-btn.track-x.selected {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: #fff;
+}
+.toggle-btn.track-x.selected:hover { border-color: #c0392b; }
+/* The ✗ button itself switches from red to yellow-with-a-black-outline once
+   the "were you able to correct it easily?" follow-up has been answered
+   Yes — see nostrilMarkKind in app.js. Black text/border (rather than the
+   white used by the other states) is what keeps the ✗ legible against a
+   bright yellow fill. */
+.toggle-btn.track-x.selected.x-corrected {
+  background: #f1c40f;
+  border-color: #000;
+  color: #000;
+}
+.toggle-btn.track-x.selected.x-corrected:hover { border-color: #000; }
+
+.tracking-followup {
+  margin-top: 0.6rem;
+}
+.tracking-followup .tracking-label { margin-bottom: 0.5rem; }
+
+.toggle-btn.track-corrected-yes.selected {
+  background: #f1c40f;
+  border-color: #000;
+  color: #000;
+}
+.toggle-btn.track-corrected-no.selected {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: #fff;
+}
+
+.popup-clear-btn {
+  display: block;
+  margin: 0.6rem auto 0;
+  font-size: 0.8rem;
+}
+
+.day-popup-close {
+  width: 100%;
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.day-popup-close:hover { border-color: var(--accent); }
+
+/* Mantra tab — audio player */
+
+.mantra-item + .mantra-item {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.mantra-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.mantra-play-btn {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.mantra-play-btn:hover { border-color: transparent; opacity: 0.92; }
+.mantra-play-btn .icon-play { margin-left: 2px; } /* optical centering */
+/* Same rule as .spinner[hidden] / .modal-overlay[hidden] above: SVG icons
+   need this spelled out explicitly, or toggling the `hidden` attribute
+   silently does nothing and both icons stay visible at once. */
+.mantra-play-btn svg[hidden] { display: none; }
+
+.mantra-item-name { margin: 0; font-weight: 600; font-size: 0.98rem; }
+
+.mantra-seek-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.6rem;
+}
+
+.mantra-item-time {
+  flex: none;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* A native <input type="range"> as the seek bar — the browser's own
+   dragging, clicking, keyboard (arrow keys, Home/End), and touch handling
+   is what actually makes seeking reliable, rather than reimplementing all
+   of that by hand on a plain div. Both WebKit/Blink and Firefox need their
+   track and thumb restyled separately; there's no shared shorthand. */
+.mantra-seek {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.25rem; /* generous hit area, even though the visible track is thin */
+  background: transparent;
+  margin: 0;
+  cursor: pointer;
+}
+
+.mantra-seek::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+}
+.mantra-seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--card-bg);
+  margin-top: -5px; /* centers the thumb on a 6px track */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.mantra-seek::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+}
+.mantra-seek::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+.mantra-seek::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--card-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.mantra-seek:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mantra-seek:focus-visible::-moz-range-thumb { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Mantra tab — locked (paid, unlock-code required) mantras */
+
+.mantra-item-chakra {
+  margin: 0 0 0.7rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.mantra-unlock-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.mantra-unlock-input {
+  flex: 1;
+  min-width: 9rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.mantra-unlock-btn { margin-top: 0; flex: none; }
+
+.mantra-unlock-error {
+  margin: 0 0 0.7rem;
+  font-size: 0.82rem;
+  color: #c0392b;
+}
+
+.mantra-purchase-btn {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+}
+
+/* Chakra Energy Timer */
+
+.chakra-current {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+  margin: 0.75rem 0 1rem;
+}
+
+.chakra-number {
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+}
+
+.chakra-current-text p { margin: 0; }
+.chakra-name { font-weight: 600; font-size: 0.95rem; }
+.chakra-english { font-size: 0.82rem; color: var(--muted); margin-top: 0.1rem !important; }
+
+.chakra-visual { margin: 1rem 0 0.75rem; }
+
+.chakra-segments {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.chakra-segment {
+  flex: 1 1 0;
+  text-align: center;
+  padding: 0.4rem 0.1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.chakra-segment.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Chakra Assessment — Today tab entry point / summary */
+
+.chakra-quiz-summary-text {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0 0 0.4rem;
+}
+
+.chakra-quiz-summary-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+.chakra-quiz-summary-links .link-button { margin: 0; }
+.chakra-quiz-past-results-link {
+  display: block;
+  margin: 0.6rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+/* Same recurring fix as everywhere else in this file: `#chakraQuizShowRow`
+   also carries the `.chakra-quiz-summary-links` class above for its flex
+   layout, and that class's own `display: flex` (an author rule) otherwise
+   beats the browser's default `[hidden] { display: none }` — without this,
+   hiding the row via the `hidden` attribute silently stopped working and
+   both the visible and hidden Today-tab states could show at once. */
+#chakraQuizShowRow[hidden] { display: none; }
+
+/* The delete icon lives outside #chakraQuizSummaryRow / #chakraQuizShowRow
+   (see index.html) so it can stay visible in BOTH the visible and hidden
+   Today-tab states — it's positioned in the card's top-right corner rather
+   than inside either row's flex layout, so it never has to be duplicated
+   or reconciled between the two mutually-exclusive states. */
+.chakra-quiz-card {
+  position: relative;
+}
+/* Keeps the summary text/links clear of the absolutely-positioned delete
+   icon in the corner, in both states. */
+#chakraQuizCard h2,
+#chakraQuizSummaryRow,
+#chakraQuizShowRow {
+  padding-right: 2.25rem;
+}
+.chakra-quiz-delete-btn {
+  position: absolute;
+  top: 0.9rem;
+  right: 1.1rem;
+  color: #c0392b;
+  padding: 0.2rem;
+  border-radius: 6px;
+}
+.chakra-quiz-delete-btn:hover { background: rgba(192, 57, 43, 0.12); }
+.chakra-quiz-delete-btn[hidden] { display: none; }
+
+/* Chakra Assessment — full-screen quiz overlay */
+
+.quiz-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 60;
+  overflow-y: auto;
+  /* Reserves the same bottom space as `.tab-content` below the fixed
+     bottom nav — the nav stays visible and tappable throughout the quiz
+     (see `.bottom-nav`'s z-index below), so quiz content must never sit
+     underneath it. */
+  padding: 1.5rem 1.25rem calc(5.5rem + env(safe-area-inset-bottom, 0px));
+}
+/* Same recurring fix as .modal-overlay[hidden] / .spinner[hidden] above: an
+   author `display` rule always wins over the browser's own
+   `[hidden] { display: none }`, so this override is required or the quiz
+   would show up immediately on page load. */
+.quiz-overlay[hidden] { display: none; }
+
+.quiz-view {
+  max-width: 520px;
+  margin: 0 auto;
+}
+.quiz-view h2 {
+  margin: 0 0 1rem;
+  font-size: 1.3rem;
+}
+
+.quiz-disclaimer-text {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin: 0 0 1rem;
+}
+
+.quiz-disclaimer-checkbox-row {
+  align-items: flex-start;
+  font-size: 0.92rem;
+  color: var(--text);
+  margin: 0 0 1.25rem;
+}
+.quiz-disclaimer-checkbox-row input {
+  margin-top: 0.2rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: none;
+}
+
+/* There is no standalone exit/return button anywhere in the quiz overlay
+   any more — the always-visible bottom nav (see `.bottom-nav` above) is the
+   only way in or out, with a confirmation prompt while progress is at
+   stake (see bindTabNav in app.js). */
+
+.quiz-results-saved-note {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1.1rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.quiz-results-actions-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  margin: 0.5rem 0 0;
+}
+.quiz-results-actions-row .link-button {
+  display: block;
+  margin: 0;
+}
+
+.quiz-answers-review {
+  margin: 0.75rem 0 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.quiz-answers-review[hidden] { display: none; }
+
+.quiz-review-page {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+.quiz-review-page-label {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.quiz-review-question {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+.quiz-review-question:last-child { margin-bottom: 0; }
+.quiz-review-answer {
+  display: inline-block;
+  min-width: 2.1rem;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border-radius: 5px;
+  padding: 0.05rem 0.35rem;
+  margin-right: 0.4rem;
+}
+.quiz-review-answer-yes { background: rgba(47, 143, 78, 0.18); color: #2f8f4e; }
+.quiz-review-answer-no { background: rgba(192, 57, 43, 0.14); color: #c0392b; }
+.quiz-review-unavailable { color: var(--muted); font-size: 0.88rem; }
+
+.quiz-page-header {
+  margin-bottom: 1.25rem;
+}
+.quiz-page-progress {
+  margin: 0 0 0.2rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.quiz-page-label {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.quiz-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.quiz-question {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+}
+.quiz-question-text {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+}
+/* Calls out a key word within a question (e.g. Chakra 4's "touch") so users
+   don't miss its significance — see emphasizeWords/`emphasize` in app.js /
+   chakra-quiz-data.js. */
+.quiz-question-emphasis {
+  font-weight: 700;
+  background: rgba(217, 164, 65, 0.25);
+  border-radius: 3px;
+  padding: 0 0.15em;
+}
+.quiz-question-options {
+  display: flex;
+  gap: 1.5rem;
+}
+/* Soma's Chilla-count question has three longer-worded options instead of
+   a plain Yes/No pair — stack them so the longer labels don't overflow on
+   narrow screens. */
+.quiz-question-options-triple {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.quiz-question-option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+.quiz-question-option input { margin: 0; }
+
+.quiz-validation-error {
+  color: var(--error-text);
+  background: var(--error-bg);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.quiz-page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.quiz-page-nav .primary-button {
+  width: auto;
+  flex: 1;
+  margin-top: 0;
+}
+.quiz-page-nav #quizBackBtn { flex: none; margin: 0; }
+
+/* Chakra Assessment — results view */
+
+.quiz-result-primary {
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin: 0 0 0.4rem;
+}
+
+/* A real availability check now (see buildRecommendationBlockHtml in
+   app.js) — every chakra this function is ever called for (root through
+   thirdeye) genuinely has a Mantra-tab player, so the header always reads
+   "available in app". */
+.quiz-result-availability-tag {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.quiz-result-mantra-primary {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.quiz-result-additional-list a {
+  color: var(--accent);
+}
+
+.quiz-result-why {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0.35rem 0 0.75rem;
+}
+
+.quiz-result-additional {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.25rem;
+}
+.quiz-result-additional-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.quiz-result-additional-list {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+  font-size: 0.92rem;
+}
+.quiz-result-additional-list li { margin-bottom: 0.3rem; }
+
+.quiz-store-btn {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+}
+/* Same recurring fix as .modal-overlay[hidden] etc. above — this element
+   sets its own `display: block`, which always beats the browser's default
+   `[hidden] { display: none }` unless spelled out explicitly here. */
+.quiz-store-btn[hidden] { display: none; }
+
+.quiz-result-recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.quiz-recommendation-block {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+}
+.quiz-recommendation-block .quiz-result-additional {
+  margin-bottom: 0.75rem;
+}
+.quiz-recommendation-block .quiz-result-encouragement {
+  margin-bottom: 0;
+}
+
+/* Chakra Assessment — "ready for higher mantras" (Soma/Crown) and "no
+   clear recommendation" results, and the shared consultation CTA */
+
+.quiz-result-ready,
+.quiz-result-none {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.quiz-result-none { color: var(--muted); }
+.quiz-result-ready p,
+.quiz-result-none p { margin: 0; }
+
+/* Additive Tier 2 tie note (see PC_CHAKRA_TIER2_TIE_MESSAGES) — sits
+   alongside a normal recommendation, never replaces it. */
+.quiz-result-tie-note {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+.quiz-result-tie-note p { margin: 0; }
+.quiz-result-tie-note a { color: var(--accent); }
+
+.quiz-consultation-cta {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  padding-top: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+.quiz-recommendation-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  margin: 0 0 0.4rem;
+}
+
+/* The combined Soma/7th quiz page — an upfront purification question plus
+   two headed groups of questions, generated the same way as a normal
+   page's questions (see renderQuizPage in app.js). */
+.quiz-page-purification {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+}
+.quiz-page-purification .quiz-question-text { font-weight: 600; }
+.quiz-page-purification-note {
+  margin: 0.6rem 0 0;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.quiz-subsection-heading {
+  margin: 1.25rem 0 0.75rem;
+  font-size: 1rem;
+  color: var(--text);
+}
+.quiz-subsection-heading:first-of-type { margin-top: 0; }
+
+.quiz-result-encouragement {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0 0 1.25rem;
+}
+
+.quiz-footer-disclaimer {
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  padding-top: 0.9rem;
+  margin: 1.5rem 0 1.25rem;
+}
+
+.quiz-done-btn {
+  width: 100%;
+}
+
+/* Practice tab — Assessment History */
+
+.assessment-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* The whole card (except the Delete link — see the click-delegation guard
+   in app.js) opens the full recommendation view for that attempt. */
+.assessment-history-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+}
+.assessment-history-item:hover { border-color: var(--accent); }
+.assessment-history-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.assessment-history-item-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.assessment-history-item-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.assessment-history-item-date {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.assessment-history-item-summary {
+  font-size: 0.88rem;
+  margin: 0 0 0.4rem;
+}
+
+.assessment-history-item-additional {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+.assessment-history-delete-btn {
+  color: #c0392b;
+  font-size: 0.8rem;
+}
+
+/* Today tab — quiet "Were you referred by a friend?" referral code entry */
+
+.referral-entry-card {
+  background: transparent;
+  border-style: dashed;
+}
+.referral-entry-label {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.referral-entry-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.referral-entry-code-input {
+  flex: 1;
+  min-width: 9rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+#referralEntryDetailsRow {
+  margin-top: 0.7rem;
+}
+.field-error {
+  color: #c0392b;
+  font-size: 0.82rem;
+  margin: 0.4rem 0 0.9rem;
+}
+.referral-entry-thanks {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* Earn a Free Mantra (Mantra tab) */
+
+.earn-mantra-card {
+  border: 1px solid var(--accent, #caa257);
+  background: rgba(202, 162, 87, 0.08);
+}
+.earn-mantra-option {
+  margin: 1rem 0;
+  padding: 0.9rem 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.earn-mantra-option h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+.earn-mantra-option p {
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.earn-mantra-option-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+.referral-email-prompt-text {
+  margin: 0 0 0.6rem;
+}
+.referral-code-label {
+  margin: 0 0 0.3rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.referral-code-text {
+  font-family: monospace;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.6rem;
+}
+.referral-copied-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+  color: #2f8f4e;
+}
+.earn-mantra-footnote {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 1rem 0 0;
+}
+/* Donate (bottom of Mantra tab) */
+
+.donate-card p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0 0 0.9rem;
+}
+.donate-btn {
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* Social links (bottom of Today tab) */
+.social-links-row {
+  margin: 1.1rem 0 0.9rem;
+  padding: 0 0.1rem;
+  text-align: center;
+}
+.social-links-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.social-links-icons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem 1rem;
+}
+/* Plain text links — same color/weight as the rest of the app's copy, no
+   purple, no pill background/border. */
+.social-links-icons a {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+.social-links-icons a:hover {
+  text-decoration: underline;
+}
+
+/* Newsletter signup — Constant Contact's inline-form widget renders itself
+   into the .ctct-inline-form div (see the Universal Code + divs in
+   index.html); these rules only style the surrounding card/section. */
+.newsletter-signup-card .ctct-inline-form,
+.quiz-newsletter-section .ctct-inline-form {
+  margin-top: 0.5rem;
+}
+
+/* Auto-shown newsletter section on the quiz results page */
+.quiz-newsletter-section {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.quiz-newsletter-section h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+}
+
+/* Learn tab — accordion sections
+   ------------------------------------------------------------------------
+   Follows the app's regular theme (--card-bg/--text/--border, light or
+   dark) like every other card, rather than a fixed palette of its own —
+   titles are slightly larger and bolder than a typical card heading so
+   they stand out clearly, and body copy uses --text (not the dimmer
+   --muted) at a slightly larger size for good contrast/readability on a
+   dark background. */
+
+.learn-accordion-card { padding-left: 0; padding-right: 0; }
+/* This is the page title for the whole Learn tab, not a section label like
+   other .card h2 headers — sized and weighted to read as a prominent title
+   rather than the small-caps section-header pattern used elsewhere. */
+.learn-accordion-card h2 {
+  padding: 0 1.1rem;
+  margin: 0 0 1.2rem;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Category labels grouping the accordion items (e.g. "The Chakra System")
+   — deliberately styled unlike .accordion-header/.accordion-title (no
+   button, no pointer cursor, no hover state, no expand icon) so it reads
+   immediately as a section label rather than another clickable row. */
+.accordion-group-header {
+  margin: 1.6rem 0 0.2rem;
+  padding: 0 1.1rem;
+  /* Larger than the 1.05rem accordion item titles below it (this is a
+     parent-level heading over several of them), and styled like the
+     Today tab's section headers (.card h2) rather than accent purple:
+     same muted color, same uppercase treatment, same weight, same
+     letter-spacing — just sized up a step for that visual hierarchy. */
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.accordion-group-header:first-of-type { margin-top: 0.25rem; }
+
+.accordion-item {
+  border-top: 1px solid var(--border);
+}
+.accordion-item:last-child { border-bottom: 1px solid var(--border); }
+
+.accordion-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: none;
+  border: none;
+  padding: 1.05rem 1.1rem;
+  margin: 0;
+  text-align: left;
+  font: inherit;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.accordion-header:hover { background: rgba(127, 127, 127, 0.08); color: var(--accent); }
+.accordion-item.expanded .accordion-header { background: rgba(127, 127, 127, 0.08); }
+
+.accordion-title { flex: 1; }
+
+.accordion-icon {
+  flex: none;
+  color: var(--muted);
+  transition: transform 0.2s ease;
+}
+.accordion-item.expanded .accordion-icon { transform: rotate(180deg); }
+
+/* The 0fr/1fr grid-template-rows trick: a single grid row that animates
+   between "collapsed" and "the panel's natural height" without needing to
+   know that height in advance (unlike a max-height animation, which always
+   needs a guessed ceiling value). .accordion-panel-inner's overflow:hidden
+   is what actually clips the content while the row is sized at 0fr. */
+.accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.accordion-item.expanded .accordion-panel { grid-template-rows: 1fr; }
+
+.accordion-panel-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+.accordion-panel-inner > *:first-child { margin-top: 0; }
+.accordion-panel-inner > *:last-child { margin-bottom: 0; }
+.accordion-panel-inner {
+  padding: 0 1.1rem;
+}
+.accordion-item.expanded .accordion-panel-inner {
+  padding-top: 0.9rem;
+  padding-bottom: 1.1rem;
+}
+
+.accordion-panel-inner p {
+  color: var(--text);
+  font-size: 0.96rem;
+  line-height: 1.6;
+  margin: 0 0 0.85rem;
+}
+
+.accordion-panel-inner a {
+  color: var(--accent);
+}
+
+.accordion-subhead {
+  margin: 1.1rem 0 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border);
+}
+.accordion-panel-inner > .accordion-subhead:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* "What is the Prana Calendar?" — a PERMANENT, always-visible title (never
+   a toggle, never hidden) with a small "Read more ›" trigger on the SAME
+   line, pushed to the right (title left, toggle right — space-between),
+   rather than stacked on its own line below. These overrides win over the
+   generic .accordion-header rules above (same specificity, declared later)
+   so this one toggle can look like the app's other small tappable
+   indicators (Nitya/Nakshatra/Month View) instead of a big accordion bar. */
+.what-is-prana-calendar-accordion {
+  border-top: none;
+  border-bottom: none;
+}
+.what-is-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  text-align: left;
+}
+.accordion-permanent-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+  text-align: left;
+}
+.what-is-prana-calendar-accordion .read-more-toggle.accordion-header {
+  flex: none;
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+  margin: 0;
+  background: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--tap-accent);
+  white-space: nowrap;
+}
+.what-is-prana-calendar-accordion .read-more-toggle.accordion-header:hover,
+.what-is-prana-calendar-accordion .read-more-toggle.accordion-header:focus-visible {
+  background: none;
+  color: var(--tap-accent);
+}
+.what-is-prana-calendar-accordion.expanded .read-more-toggle.accordion-header {
+  background: none;
+}
+.read-more-toggle .lunar-tappable-chevron {
+  font-size: 0.85rem;
+}
+.what-is-prana-calendar-accordion .accordion-panel-inner {
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0.6rem;
+  text-align: left;
+}
+
+/* The "How to Use the Prana Calendar" accordion lives inside the ordinary
+   (padded) Location card rather than the zero-side-padding
+   .learn-accordion-card, so it pulls itself flush to the card's left/right
+   edges the same way .learn-accordion-card does for all of its items —
+   just scoped to this one element instead of the whole card. */
+.how-to-use-accordion {
+  margin-left: -1.25rem;
+  margin-right: -1.25rem;
+  margin-top: 1rem;
+}
+/* The How-to-Use accordion now also lives inside .result-card, which has
+   its own (smaller, more compact) horizontal padding — bleed to match
+   that padding exactly instead of the generic .card padding above. It also
+   inherits .result-card's centered text-align, which is wrong for this
+   accordion's prose — left-align its header and body content explicitly. */
+.result-card .how-to-use-accordion {
+  margin-left: -1.1rem;
+  margin-right: -1.1rem;
+  text-align: left;
+}
+.result-card .how-to-use-accordion .accordion-header,
+.result-card .how-to-use-accordion .accordion-panel-inner {
+  text-align: left;
+}
+
+.plain-list {
+  list-style: none;
+  margin: 0 0 0.85rem;
+  padding: 0;
+  color: var(--text);
+  font-size: 0.96rem;
+  line-height: 1.6;
+}
+.plain-list li { margin: 0 0 0.3rem; }
+
+.referral-joined-banner {
+  background: rgba(47, 143, 78, 0.12);
+  border: 1px solid #2f8f4e;
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  margin: 0 0 1rem;
+}
+.referral-joined-banner p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+/* Quiz results — "Email me my results", now the first thing shown on the
+   results page (see index.html), styled as its own prominent card rather
+   than a plain row so it doesn't get lost below the chakra recommendation. */
+
+.email-results-card {
+  margin: 0 0 1.4rem;
+  padding: 1.15rem 1.1rem 1.25rem;
+  background: rgba(106, 79, 163, 0.09);
+  border: 1px solid rgba(106, 79, 163, 0.4);
+  border-radius: 12px;
+}
+.email-results-card h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
+}
+.email-results-subtext {
+  margin: 0 0 0.9rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+/* .primary-button normally stretches full-width with its own top margin —
+   both wrong inside this input+button row. */
+.email-results-card .input-with-button .primary-button {
+  width: auto;
+  margin-top: 0;
+  flex: none;
+}
+.email-results-status {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.email-results-status.success { color: #2f8f4e; }
+.email-results-status.error { color: #c0392b; }
+
+/* ------------------------------------------------------------------------
+   Sacred header — Sri Shyamji's portrait/signature shown at the top of each
+   tab. Images are hidden individually (see app.js) if their file is
+   missing, so a tab never shows a broken-image icon before the real files
+   are dropped into images/.
+   ------------------------------------------------------------------------ */
+.sacred-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.4rem 0 1.4rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+.sacred-header-photo {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  border-radius: 10px;
+}
+.sacred-header-signature {
+  display: block;
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  /* The signature graphic (Shyamji_Signature_no_background.png) already has
+     a transparent background, so in light mode it just displays normally —
+     dark ink on the app's light card background. In dark mode that same
+     dark ink would be hard to read against the dark card background, so
+     `screen` is used there instead: it lightens the ink so it reads clearly
+     against the dark background. */
+  mix-blend-mode: normal;
+}
+@media (prefers-color-scheme: dark) {
+  .sacred-header-signature {
+    mix-blend-mode: screen;
+  }
+}
+/* Today tab's header carries both images with tighter spacing between them
+   than the border-bottom gap above. */
+.sacred-header-today .sacred-header-photo { margin-bottom: 0.1rem; }
+
+/* Sri Shyamji's photo at the top of the "Who was Sri Shyamji Bhatnagar?"
+   accordion panel, above the biography text. */
+.shyamji-portrait-photo {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  margin: 0 auto 1.1rem;
+  border-radius: 12px;
+}
+
+/* ------------------------------------------------------------------------
+   Once-per-day splash screen — content comes entirely from events.json
+   (fetched and rendered in app.js). Tapping anywhere on it, or the X,
+   closes it.
+   ------------------------------------------------------------------------ */
+.splash-card {
+  position: relative;
+  max-width: 400px;
+  text-align: center;
+  cursor: pointer;
+}
+.splash-close-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.7rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.splash-close-btn:hover { color: var(--text); }
+.splash-logo-wrap {
+  margin: 0.4rem 0 1.2rem;
+}
+.splash-logo {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  margin: 0 auto;
+}
+.splash-logo-fallback {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.splash-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  text-align: left;
+}
+.splash-event-item {
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+}
+.splash-event-item:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+.splash-event-title {
+  margin: 0 0 0.3rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.splash-event-description {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.splash-event-link {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+}
+.splash-event-link:hover { text-decoration: underline; }
