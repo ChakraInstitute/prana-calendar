@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Prana Calendar — Admin</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  /* Small, self-contained additions just for the admin page — everything
+     else (colors, fonts, card look) comes from the main app stylesheet so
+     this page matches the app it's editing. */
+  .admin-wrap {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 4rem;
+  }
+  .admin-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .admin-header h1 {
+    margin: 0 0 0.3rem;
+    font-size: 1.5rem;
+  }
+  .admin-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .admin-gate {
+    max-width: 320px;
+    margin: 3rem auto 0;
+    text-align: center;
+  }
+  .admin-gate input[type="password"] {
+    text-align: center;
+    letter-spacing: 0.3em;
+    font-size: 1.3rem;
+  }
+  .admin-field {
+    margin-bottom: 1rem;
+  }
+  .admin-field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: var(--muted);
+  }
+  .admin-field input[type="text"],
+  .admin-field input[type="url"],
+  .admin-field input[type="password"],
+  .admin-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+  }
+  .admin-field textarea {
+    min-height: 4.5rem;
+    resize: vertical;
+  }
+  .admin-show-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .admin-show-toggle input {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+  .admin-show-toggle label {
+    font-weight: 600;
+  }
+  .admin-event-card {
+    position: relative;
+  }
+  .admin-event-card .admin-remove-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+  .admin-add-row {
+    text-align: center;
+    margin: 1.25rem 0;
+  }
+  .admin-save-row {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 1rem 0;
+    background: linear-gradient(to top, var(--bg) 70%, transparent);
+  }
+  .admin-status {
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  .admin-status.ok { color: #2f8a3e; }
+  .admin-status.err { color: #b3392c; }
+  .admin-lock-row {
+    text-align: right;
+    margin-bottom: 0.5rem;
+  }
+  .admin-lock-row button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+  }
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <div class="admin-header">
+    <h1>Prana Calendar — Admin</h1>
+    <p>Edit the splash-screen announcement shown when the app opens.</p>
+  </div>
+
+  <div id="gateScreen" class="admin-gate card">
+    <p style="margin-top:0;">Enter the admin password to continue.</p>
+    <div class="admin-field">
+      <input type="password" id="gatePasswordInput" inputmode="numeric" autocomplete="off" placeholder="&bull;&bull;&bull;&bull;" maxlength="32">
+    </div>
+    <button type="button" id="gateUnlockBtn" class="small-button" style="width:100%;">Unlock</button>
+    <p id="gateStatus" class="admin-status err" hidden></p>
+  </div>
+
+  <div id="editorScreen" hidden>
+    <div class="admin-lock-row">
+      <button type="button" id="lockBtn">Lock &amp; sign out</button>
+    </div>
+
+    <section class="card admin-show-toggle">
+      <input type="checkbox" id="showToggle">
+      <label for="showToggle">Show the announcement popup when the app opens</label>
+    </section>
+
+    <div id="eventsList"></div>
+
+    <div class="admin-add-row">
+      <button type="button" id="addEventBtn" class="small-button">+ Add Event</button>
+    </div>
+
+    <div class="admin-save-row">
+      <button type="button" id="saveBtn" class="small-button">Save Changes</button>
+      <p id="saveStatus" class="admin-status" hidden></p>
+    </div>
+  </div>
+</div>
+
+<template id="eventCardTemplate">
+  <section class="card admin-event-card">
+    <button type="button" class="icon-button admin-remove-btn" title="Remove this event" aria-label="Remove this event">&times;</button>
+    <div class="admin-field">
+      <label>Title</label>
+      <input type="text" class="ev-title" placeholder="Event title">
+    </div>
+    <div class="admin-field">
+      <label>Description</label>
+      <textarea class="ev-description" placeholder="Event description"></textarea>
+    </div>
+    <div class="admin-field" style="margin-bottom:0;">
+      <label>Link (optional)</label>
+      <input type="url" class="ev-link" placeholder="https://...">
+    </div>
+  </section>
+</template>
+
+<script>
+(function () {
+  var password = null; // held only in memory for this page load — never stored
+  var els = {
+    gateScreen: document.getElementById('gateScreen'),
+    gatePasswordInput: document.getElementById('gatePasswordInput'),
+    gateUnlockBtn: document.getElementById('gateUnlockBtn'),
+    gateStatus: document.getElementById('gateStatus'),
+    editorScreen: document.getElementById('editorScreen'),
+    lockBtn: document.getElementById('lockBtn'),
+    showToggle: document.getElementById('showToggle'),
+    eventsList: document.getElementById('eventsList'),
+    addEventBtn: document.getElementById('addEventBtn'),
+    saveBtn: document.getElementById('saveBtn'),
+    saveStatus: document.getElementById('saveStatus'),
+    eventCardTemplate: document.getElementById('eventCardTemplate'),
+  };
+
+  function showGateError(msg) {
+    els.gateStatus.textContent = msg;
+    els.gateStatus.hidden = false;
+  }
+
+  function addEventCard(ev) {
+    ev = ev || { title: '', description: '', link: '' };
+    var node = els.eventCardTemplate.content.firstElementChild.cloneNode(true);
+    node.querySelector('.ev-title').value = ev.title || '';
+    node.querySelector('.ev-description').value = ev.description || '';
+    node.querySelector('.ev-link').value = ev.link || '';
+    node.querySelector('.admin-remove-btn').addEventListener('click', function () {
+      node.remove();
+    });
+    els.eventsList.appendChild(node);
+  }
+
+  function loadEditor() {
+    fetch('events.json', { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('events.json returned ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        els.showToggle.checked = !!data.show;
+        els.eventsList.innerHTML = '';
+        (data.events || []).forEach(addEventCard);
+        els.gateScreen.hidden = true;
+        els.editorScreen.hidden = false;
+      })
+      .catch(function (e) {
+        showGateError('Unlocked, but could not load events.json: ' + e.message);
+      });
+  }
+
+  els.gateUnlockBtn.addEventListener('click', function () {
+    var attempt = els.gatePasswordInput.value;
+    if (!attempt) {
+      showGateError('Enter the password.');
+      return;
+    }
+    els.gateStatus.hidden = true;
+    els.gateUnlockBtn.disabled = true;
+    els.gateUnlockBtn.textContent = 'Checking…';
+    fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: attempt }),
+    })
+      .then(function (res) { return res.json().then(function (body) { return { ok: res.ok, body: body }; }); })
+      .then(function (result) {
+        els.gateUnlockBtn.disabled = false;
+        els.gateUnlockBtn.textContent = 'Unlock';
+        if (result.ok && result.body.ok) {
+          password = attempt;
+          els.gatePasswordInput.value = '';
+          loadEditor();
+        } else {
+          showGateError((result.body && result.body.error) || 'Incorrect password.');
+        }
+      })
+      .catch(function (e) {
+        els.gateUnlockBtn.disabled = false;
+        els.gateUnlockBtn.textContent = 'Unlock';
+        showGateError('Could not reach the server: ' + e.message);
+      });
+  });
+
+  els.gatePasswordInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') els.gateUnlockBtn.click();
+  });
+
+  els.lockBtn.addEventListener('click', function () {
+    password = null;
+    els.editorScreen.hidden = true;
+    els.gateScreen.hidden = false;
+    els.saveStatus.hidden = true;
+  });
+
+  els.addEventBtn.addEventListener('click', function () {
+    addEventCard();
+  });
+
+  els.saveBtn.addEventListener('click', function () {
+    if (!password) {
+      els.lockBtn.click();
+      return;
+    }
+    var events = Array.from(els.eventsList.querySelectorAll('.admin-event-card')).map(function (card) {
+      return {
+        title: card.querySelector('.ev-title').value,
+        description: card.querySelector('.ev-description').value,
+        link: card.querySelector('.ev-link').value,
+      };
+    });
+    var payload = {
+      password: password,
+      data: { show: els.showToggle.checked, events: events },
+    };
+    els.saveBtn.disabled = true;
+    els.saveBtn.textContent = 'Saving…';
+    els.saveStatus.hidden = true;
+    fetch('/api/admin/save-events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(function (res) { return res.json().then(function (body) { return { ok: res.ok, body: body }; }); })
+      .then(function (result) {
+        els.saveBtn.disabled = false;
+        els.saveBtn.textContent = 'Save Changes';
+        els.saveStatus.hidden = false;
+        if (result.ok && result.body.ok) {
+          els.saveStatus.className = 'admin-status ok';
+          els.saveStatus.textContent = 'Saved.';
+        } else {
+          if (result.body && result.body.error === 'Incorrect password.') {
+            // The password was accepted at login but the server rejected it
+            // here too — shouldn't normally happen, but fail safe by
+            // sending back to the gate rather than silently losing edits.
+            password = null;
+          }
+          els.saveStatus.className = 'admin-status err';
+          els.saveStatus.textContent = (result.body && result.body.error) || 'Could not save.';
+        }
+      })
+      .catch(function (e) {
+        els.saveBtn.disabled = false;
+        els.saveBtn.textContent = 'Save Changes';
+        els.saveStatus.hidden = false;
+        els.saveStatus.className = 'admin-status err';
+        els.saveStatus.textContent = 'Could not reach the server: ' + e.message;
+      });
+  });
+})();
+</script>
+</body>
+</html>

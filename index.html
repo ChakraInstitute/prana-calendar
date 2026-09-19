@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prana Calendar</title>
+
+  <!-- PWA — lets the app be installed to the home screen on iPhone and
+       Android as "Prana Calendar". The manifest supplies the install
+       name/icon for Android/Chrome; the apple-* tags below cover the
+       equivalent "Add to Home Screen" behavior on iOS Safari, which does
+       not read manifest.json for its home-screen icon or title. -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6a4fa3">
+
+  <link rel="icon" type="image/png" sizes="512x512" href="images/prana-calendar-icon.png">
+  <link rel="apple-touch-icon" href="images/prana-calendar-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Prana Calendar">
+
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Constant Contact newsletter signup — Universal Code (once per page).
+       The inline-form widget script scans the page for .ctct-inline-form
+       divs (see the Today tab and quiz results page) and renders/submits
+       the signup form itself; no iframe or custom JS is needed here. -->
+  <script> var _ctct_m = "a21832b1a40af3126b082a14eaf595f4"; </script>
+  <script id="signupScript" src="//static.ctctcdn.com/js/signup-form-widget/current/signup-form-widget.min.js" async defer></script>
+</head>
+<body>
+
+  <div class="app">
+    <header class="app-header brand-header">
+      <!-- translate="no" + class="notranslate": a browser/extension page
+           translator (e.g. Chrome's "Translate this page") can otherwise
+           treat "EN" as a real word in some other language and mangle it
+           (reported as showing "AND-FR-NL-ES" instead of "EN|FR|NL|ES") —
+           this tells translation tools to leave these short language-code
+           labels exactly as written. -->
+      <div id="languageToggle" class="language-toggle notranslate" translate="no" role="group" aria-label="Language">
+        <button type="button" class="language-option" data-lang="en">EN</button>
+        <span class="language-sep" aria-hidden="true">|</span>
+        <button type="button" class="language-option" data-lang="fr">FR</button>
+        <span class="language-sep" aria-hidden="true">|</span>
+        <button type="button" class="language-option" data-lang="nl">NL</button>
+        <span class="language-sep" aria-hidden="true">|</span>
+        <button type="button" class="language-option" data-lang="es">ES</button>
+      </div>
+
+      <!-- Icon-only social row, moved to the very top of the app (above the
+           InnerTuning header) per request — just the word "Follow:" plus
+           the four platform icons, no descriptive sentence. -->
+      <div class="social-links-row top-social-links">
+        <span class="social-links-label" data-i18n="followLabel">Follow:</span>
+        <div class="social-links-icons">
+          <a href="https://www.instagram.com/SriCentreHomeofChakraInstitute" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg>
+          </a>
+          <a href="https://www.facebook.com/SriCentreHomeofChakraInstitute" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h-2a5 5 0 0 0-5 5v3H6v4h2v6h4v-6h3l1-4h-4V8a1 1 0 0 1 1-1h3z"></path></svg>
+          </a>
+          <a href="https://www.youtube.com/@SriCentreHomeofChakraInstitute" target="_blank" rel="noopener" aria-label="YouTube">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="4"></rect><path d="M10.5 9.5l5 2.5-5 2.5z" fill="currentColor" stroke="none"></path></svg>
+          </a>
+          <a href="https://www.chakrainstitute.com" target="_blank" rel="noopener" aria-label="Website">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>
+          </a>
+        </div>
+      </div>
+
+      <p class="brand-line">InnerTuning&trade;<br><span data-i18n="brandTagline">Rediscover Your Natural Rhythm</span></p>
+    </header>
+
+    <main class="tab-content">
+      <div id="tab-today" class="tab-panel">
+
+        <div class="sacred-header sacred-header-today">
+          <img src="images/Shyamji_website_pic.webp" alt="Sri Shyamji Bhatnagar" class="sacred-header-photo" id="sacredHeaderPhotoToday">
+          <img src="images/Shyamji_Signature_no_background.png" alt="Sri Shyamji's signature" class="sacred-header-signature" id="sacredHeaderSignatureToday">
+        </div>
+
+        <div class="today-title-block">
+          <h1 data-i18n="pranaCalendarTitle">Prana Calendar</h1>
+
+          <p class="subtitle" data-i18n="pranaCalendarSubtitleLine1">Ancient Wisdom, Modern Life</p>
+          <p class="subtitle" data-i18n="pranaCalendarSubtitleLine2">Aligning breath and daily rhythms with lunar and cosmic cycles.</p>
+
+          <!-- Permanent title (never hidden, never a toggle) + a small,
+               separate "Read more ›" tappable trigger below it that
+               expands the description. Styled like the app's other
+               tappable toggles (Nitya/Nakshatra/Month View) so it reads
+               as clearly interactive without being mistaken for the
+               title itself. -->
+          <div class="accordion-item what-is-prana-calendar-accordion">
+            <div class="what-is-title-row">
+              <p class="accordion-permanent-title" id="whatIsPranaCalendarTitle" data-i18n="whatIsTitle">What is the Prana Calendar?</p>
+              <button type="button" class="accordion-header lunar-tappable-toggle read-more-toggle" id="whatIsPranaCalendarHeader" aria-expanded="false" aria-controls="whatIsPranaCalendarPanel">
+                <span class="lunar-position-line" data-i18n="readMoreLabel">Read more</span>
+                <span class="lunar-tappable-chevron" aria-hidden="true">›</span>
+              </button>
+            </div>
+            <div class="accordion-panel" id="whatIsPranaCalendarPanel" role="region" aria-labelledby="whatIsPranaCalendarHeader">
+              <div class="accordion-panel-inner">
+<p data-i18n="whatIsBody">The Prana Calendar tracks which nostril should be dominant at sunrise each day based on the lunar cycle. Ancient Svar Yoga (breath) science shows that the nasal cycle mirrors the moon &mdash; and that the dominant nostril directly shifts brain hemisphere activity and body chemistry. The ionic charge of the surrounding atmosphere &mdash; which is shaped by lunar cycles, solar activity, ocean air, and environment &mdash; further influences which state the body is most receptive to. Synchronizing your breath with these rhythms supports health, clarity, and wellbeing. Check your nostril at sunrise, correct if needed, log your result, and over time build a map of your own natural rhythm.</p>
+<p><a href="#" id="learnPracticeLinkTop" class="learn-jump-link" data-learn-target="learnGroupPranaCalendarPractice" data-i18n="learnMoreInLearnTab">Learn more in the Learn tab</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reordered per request: Color/Planet/Mantra (works off whatever
+             date is selected further down) leads, then Date, then a
+             compact Location card, then Calculate + How-to-Use, then the
+             Result, then the collapsible Month View. -->
+        <section class="card day-lord-card">
+          <h2 data-i18n="dayLordTitle">Color, Planet &amp; Mantra of the Day</h2>
+          <p id="dayLordDateLabel" class="status-text"></p>
+          <div class="day-lord">
+            <div id="dayLordSwatch" class="day-lord-swatch"></div>
+            <div class="day-lord-text">
+              <p id="dayLordDay" class="day-lord-day"></p>
+              <p id="dayLordColor" class="day-lord-color"></p>
+              <p id="dayLordPlanet" class="day-lord-planet"></p>
+              <p id="dayLordMantra" class="day-lord-mantra"></p>
+            </div>
+          </div>
+          <div class="share-row">
+            <button type="button" id="shareDayLordBtn" class="link-button share-btn" data-i18n="shareBtn">Share</button>
+            <span id="shareDayLordCopiedNote" class="share-copied-note" hidden></span>
+          </div>
+
+          <h3 class="card-subsection-header" data-i18n="moonPhasesTitle">Moon Phases &amp; Cosmic Timing</h3>
+
+          <!-- Tithi/Nakshatra — display only, computed independently of the
+               nostril calculation (see js/panchanga.js). Both the Tithi
+               line and the Nakshatra line are tappable — each expands its
+               own accordion below it (see js/nitya-data.js +
+               renderNityaAccordion, and js/nakshatra-data.js +
+               renderNakshatraAccordion, in app.js). -->
+          <div id="lunarPositionInfo" class="lunar-position-info">
+            <p id="lunarPakshaText" class="lunar-position-line"></p>
+            <p id="lunarTithiText" class="lunar-position-line"></p>
+
+            <button type="button" id="lunarNityaToggle" class="lunar-tappable-toggle" aria-expanded="false" aria-controls="nityaAccordion">
+              <span id="lunarNityaText" class="lunar-position-line"></span>
+              <span class="lunar-tappable-chevron" aria-hidden="true">›</span>
+            </button>
+
+            <div id="nityaAccordion" class="nitya-accordion" hidden>
+              <p id="nityaName" class="nitya-name"></p>
+              <p id="nityaVowel" class="nitya-vowel"></p>
+              <p id="nityaDescription" class="nitya-description"></p>
+              <div class="nitya-scheme-toggle" role="group" aria-label="Nitya calculation scheme">
+                <button type="button" id="nityaSchemeClassicalBtn" class="nitya-scheme-btn"></button>
+                <button type="button" id="nityaSchemeNityotsavaBtn" class="nitya-scheme-btn"></button>
+              </div>
+              <p class="nitya-footnote"></p>
+            </div>
+
+            <button type="button" id="lunarNakshatraToggle" class="lunar-tappable-toggle" aria-expanded="false" aria-controls="nakshatraAccordion">
+              <span id="lunarNakshatraText" class="lunar-position-line"></span>
+              <span class="lunar-tappable-chevron" aria-hidden="true">›</span>
+            </button>
+
+            <div id="nakshatraAccordion" class="nitya-accordion" hidden>
+              <p id="nakshatraName" class="nitya-name"></p>
+              <p id="nakshatraMeta" class="nitya-vowel"></p>
+              <p id="nakshatraThemes" class="nitya-vowel"></p>
+              <p id="nakshatraDescription" class="nitya-description"></p>
+              <p id="nakshatraDiffNote" class="nitya-footnote"></p>
+            </div>
+
+            <p id="lunarSiderealText" class="lunar-position-line"></p>
+            <p id="lunarTropicalText" class="lunar-position-line"></p>
+          </div>
+        </section>
+
+        <!-- Date and Location now share one combined box, separated by
+             the same thin divider used elsewhere for grouped sub-sections
+             within a single card — nothing else about either section
+             changed. -->
+        <section class="card location-card-compact">
+          <h2 data-i18n="dateTitle">Date</h2>
+          <div class="field-row">
+            <label for="dateInput" data-i18n="dateInputLabel">Date (type it directly, e.g. 01/13/2021, or use the calendar icon)</label>
+            <input type="date" id="dateInput" min="2020-01-01" max="2030-12-31">
+          </div>
+
+          <div class="location-combined-divider"></div>
+
+          <h2 data-i18n="locationTitle">Location</h2>
+
+          <div class="field-row">
+            <label for="cityInput" data-i18n="cityLabel">City</label>
+            <div class="input-with-button">
+              <input type="text" id="cityInput" placeholder="e.g. Phoenix, Arizona" data-i18n-placeholder="cityInputPlaceholder">
+              <button type="button" id="citySearchBtn">
+                <span id="citySearchBtnText" data-i18n="searchBtn">Search</span>
+                <span id="citySearchSpinner" class="spinner" hidden></span>
+              </button>
+            </div>
+          </div>
+          <p id="cityStatus" class="status-text" aria-live="polite"></p>
+          <div id="cityResults" class="city-results"></div>
+
+          <label id="rememberLocationRow" class="remember-row" hidden>
+            <input type="checkbox" id="rememberLocationCheckbox">
+            <span data-i18n="rememberLocationLabel">Remember my location</span>
+          </label>
+
+          <button type="button" id="manualToggle" class="link-button" data-i18n="manualToggleLabel">
+            Enter coordinates manually instead
+          </button>
+
+          <div id="manualFields" class="manual-fields" hidden>
+            <div class="field-row">
+              <label for="latInput" data-i18n="latitudeLabel">Latitude</label>
+              <input type="number" id="latInput" step="any" placeholder="e.g. 33.4484">
+            </div>
+            <div class="field-row">
+              <label for="lonInput" data-i18n="longitudeLabel">Longitude</label>
+              <input type="number" id="lonInput" step="any" placeholder="e.g. -112.0740">
+            </div>
+            <div class="field-row">
+              <label for="tzInput" data-i18n="timezoneLabel">Timezone (IANA)</label>
+              <input type="text" id="tzInput" list="tzDatalist" placeholder="e.g. America/Phoenix">
+              <datalist id="tzDatalist"></datalist>
+            </div>
+          </div>
+
+          <button type="button" id="calculateBtn" class="small-button calculate-btn-centered" data-i18n="calculateBtn">
+            Calculate dominant nostril
+          </button>
+        </section>
+
+        <!-- The Result card now comes right after Calculate, before
+             How-to-Use/Month View, so it's the first thing the person sees
+             once they tap Calculate — per request, it no longer sits below
+             those two accordions. -->
+        <p id="errorBox" class="error-box" hidden></p>
+
+        <!-- The outer card is always visible now (never hidden), since
+             How-to-Use/Month-View live inside it too and must stay
+             reachable before a result exists. Only the result-specific
+             content (this inner wrapper) is hidden until Calculate runs —
+             see onCalculate()/showResult() in app.js, which now toggle
+             #resultContent instead of the whole card. -->
+        <section id="resultCard" class="card result-card">
+          <div id="resultContent" hidden>
+          <h2 data-i18n="resultTitle">Result</h2>
+          <div class="result-nostril-row">
+            <p id="resultNostril" class="nostril"></p>
+            <button type="button" id="resultInfoBtn" class="info-btn" aria-label="Show cycle details" title="Show cycle details" aria-expanded="false">ⓘ</button>
+          </div>
+          <p class="result-note" data-i18n="resultNote">Dominant nostril at sunrise</p>
+          <p id="resultSanskrit" class="sanskrit"></p>
+
+          <div class="result-divider"></div>
+
+          <div class="share-row">
+            <button type="button" id="shareNostrilBtn" class="link-button share-btn" data-i18n="shareBtn">Share</button>
+            <span id="shareNostrilCopiedNote" class="share-copied-note" hidden></span>
+          </div>
+
+          <dl class="result-meta">
+            <dt data-i18n="locationLabel">Location</dt>
+            <dd id="resultLocation"></dd>
+            <dt data-i18n="dateLabel">Date</dt>
+            <dd id="resultDate"></dd>
+            <dt data-i18n="localSunriseLabel">Local sunrise</dt>
+            <dd id="resultSunrise"></dd>
+          </dl>
+
+          <p id="resultDetails" class="result-details" hidden></p>
+
+          <div id="nostrilTracking" class="nostril-tracking" hidden>
+            <p class="tracking-label" data-i18n="trackingQuestion">Was your nostril correct at sunrise?</p>
+            <div id="trackingButtons" class="tracking-buttons">
+              <button type="button" id="trackCheckBtn" class="track-btn toggle-btn track-check" aria-label="Yes, it matched">✓</button>
+              <button type="button" id="trackXBtn" class="track-btn toggle-btn track-x" aria-label="No, it didn't match">✗</button>
+            </div>
+            <div id="trackCorrectedFollowup" class="tracking-followup" hidden>
+              <p class="tracking-label" data-i18n="correctedQuestion">Were you able to correct it easily?</p>
+              <div class="tracking-buttons">
+                <button type="button" id="trackCorrectedYesBtn" class="small-button toggle-btn track-corrected-yes" data-i18n="yesBtn">Yes</button>
+                <button type="button" id="trackCorrectedNoBtn" class="small-button toggle-btn track-corrected-no" data-i18n="noBtn">No</button>
+              </div>
+            </div>
+          </div>
+
+          <p class="result-history-note"><span data-i18n="resultHistoryNotePrefix">Your nostril results are saved in the</span> <button type="button" id="resultHistoryLink" class="link-button result-history-link" data-i18n="resultHistoryLinkText">Calendar tab</button> <span data-i18n="resultHistoryNoteSuffix">where you can review your history.</span></p>
+          </div>
+
+          <!-- How-to-Use + Month View now live inside the same box as the
+               Result, immediately below it, per request — no longer a
+               separate card. -->
+          <div class="location-combined-divider"></div>
+          <div class="accordion-item how-to-use-accordion">
+            <button type="button" class="accordion-header" id="howToUseHeader" aria-expanded="false" aria-controls="howToUsePanel">
+              <span class="accordion-title" data-i18n="howToUseTitle">How to Use the Prana Calendar</span>
+              <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+            </button>
+            <div class="accordion-panel" id="howToUsePanel" role="region" aria-labelledby="howToUseHeader">
+              <div class="accordion-panel-inner">
+<p data-i18n="howToUseP1">The Prana Calendar shows you which nostril should be dominant at sunrise each day, based on the current lunar cycle.</p>
+<p><span data-i18n="howToUseP2a">Left nostril — lunar (Ida). Cooling, receptive, alkaline.</span><br><span data-i18n="howToUseP2b">Right nostril — solar (Pingala). Heating, active, acidic.</span></p>
+<p data-i18n="howToUseP3">To use it:</p>
+<ul class="plain-list">
+<li data-i18n="howToUseLi1">Enter your location and today's date</li>
+<li data-i18n="howToUseLi2">Tap "Calculate Dominant Nostril"</li>
+<li data-i18n="howToUseLi3">The app shows which nostril should be dominant at sunrise</li>
+</ul>
+<p data-i18n="howToUseP4">The most important moment is sunrise. Wake at least 20 minutes before the sun rises and sit quietly. At the moment of sunrise, check which nostril is actually dominant by gently closing each side and noticing which flows more freely.</p>
+<p data-i18n="howToUseP5">If your nostril matches the calendar — your system is synchronized with the lunar cycle. A well-supported fortnight is ahead.</p>
+<p data-i18n="howToUseP6">If it doesn't match, simply switch it. Lie down on the side of the currently dominant nostril for a few minutes. The breath usually shifts within three to ten minutes. This correction, done at sunrise, resets the day.</p>
+<p data-i18n="howToUseP7">Log your result using the ✓ or ✗ buttons. Over time your Calendar tab builds a map of your synchronization with the lunar cycle — one of the most revealing forms of self-observation in this tradition.</p>
+<p><span data-i18n="howToUseP8a">Learn more about</span> <a href="#" class="learn-jump-link" data-learn-target="learn-4-what-is-svar-yoga-header" data-i18n="howToUseSvarYogaLink">Svar Yoga</a>, <a href="#" class="learn-jump-link" data-learn-target="learn-5-the-nasal-cycle-and-the-brain-header" data-i18n="howToUseNasalCyclesLink">Nasal Cycles</a> <span data-i18n="howToUseP8b">and more in the Learn tab.</span></p>
+<p data-i18n="howToUseP9">Mantra practice at sunrise supports the health of the chakras and subtle energy body — take the Chakra quiz and explore the Mantra tab to find what resonates best with your current energetic system. Many other cycles of the day and the moon are also available to assist you in working with the present cosmic energies of the day — including the planetary ruler, color, Tithi, Nakshatra, and Nitya shown above.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="location-combined-divider"></div>
+          <button type="button" id="monthViewToggle" class="lunar-tappable-toggle month-view-toggle" aria-expanded="false" aria-controls="monthViewPanel">
+            <span class="month-view-toggle-label" data-i18n="viewMonthLabel">View Month</span>
+            <span class="lunar-tappable-chevron" aria-hidden="true">›</span>
+          </button>
+          <div id="monthViewPanel" class="month-view-panel" hidden>
+            <div class="calendar-header">
+              <button type="button" id="monthViewPrevBtn" class="icon-button" aria-label="Previous month">‹</button>
+              <h3 id="monthViewMonthLabel" class="calendar-month-label"></h3>
+              <button type="button" id="monthViewNextBtn" class="icon-button" aria-label="Next month">›</button>
+            </div>
+            <div class="calendar-weekdays">
+              <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+            </div>
+            <div id="monthViewGrid" class="calendar-grid month-view-grid"></div>
+            <p id="monthViewStatus" class="status-text month-view-status"></p>
+            <div class="month-view-legend">
+              <span class="legend-item"><span class="month-view-legend-swatch month-view-outline-swatch"></span> <span data-i18n="legendTodaySelected">Today / selected</span></span>
+              <span class="legend-item"><span class="month-view-legend-swatch month-view-anchor-swatch"></span> <span data-i18n="legendAnchorDay">Anchor day</span></span>
+              <span class="legend-item">🌑 <span data-i18n="legendNewMoon">New moon</span></span>
+              <span class="legend-item">🌕 <span data-i18n="legendFullMoon">Full moon</span></span>
+              <span class="legend-item"><span class="month-view-legend-swatch month-view-left"></span> <span data-i18n="legendLeftIda">L = Left (Ida)</span></span>
+              <span class="legend-item"><span class="month-view-legend-swatch month-view-right"></span> <span data-i18n="legendRightPingala">R = Right (Pingala)</span></span>
+            </div>
+          </div>
+        </section>
+
+        <section id="chakraQuizCard" class="card chakra-quiz-card">
+          <h2 data-i18n="yourQuizTitle">Your Quiz</h2>
+          <div id="chakraQuizButtonRow">
+            <button type="button" id="takeChakraQuizBtn" class="small-button chakra-quiz-cta-btn" data-i18n="takeQuizBtn">Find Your Mantra — Take the Chakra Quiz</button>
+          </div>
+
+          <div id="chakraQuizSummaryRow" hidden>
+            <p id="chakraQuizSummaryText" class="chakra-quiz-summary-text"></p>
+            <div class="chakra-quiz-summary-links">
+              <button type="button" id="chakraQuizRetakeBtn" class="link-button" data-i18n="retakeBtn">Retake</button>
+              <button type="button" id="chakraQuizHideBtn" class="link-button" data-i18n="hideBtn">Hide</button>
+              <button type="button" id="chakraQuizSeeFullBtn" class="link-button" data-i18n="seeFullResultsBtn">See full results</button>
+            </div>
+            <button type="button" id="chakraQuizPastResultsLink" class="link-button chakra-quiz-past-results-link" data-i18n="seePastResultsBtn">See past results &rarr;</button>
+          </div>
+
+          <div id="chakraQuizShowRow" class="chakra-quiz-summary-links" hidden>
+            <button type="button" id="chakraQuizShowBtn" class="link-button" data-i18n="showRecommendationBtn">Show Recommendation</button>
+            <button type="button" id="chakraQuizShowRetakeBtn" class="link-button" data-i18n="retakeBtn">Retake</button>
+          </div>
+
+          <!-- Lives outside both the visible/hidden-state rows above and is
+               toggled independently (see renderChakraQuizSummary in app.js)
+               so it stays visible in BOTH states — only hidden when there's
+               no saved result at all. -->
+          <button type="button" id="chakraQuizDeleteBtn" class="icon-button chakra-quiz-delete-btn" aria-label="Delete this result" title="Delete this result" hidden>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path></svg>
+          </button>
+        </section>
+
+        <section id="chillaCard" class="card chilla-card">
+          <h2 data-i18n="chillaTitle">Chilla</h2>
+          <p class="chilla-pronunciation-note" data-i18n="chillaPronunciationNote">Chilla (Ch-ee-Lah) — 40-day mantra commitment</p>
+
+          <div id="chillaStartRow">
+            <button type="button" id="startChillaBtn" class="small-button" data-i18n="startChillaBtn">Start a Chilla</button>
+            <p class="chilla-track-hint"><span data-i18n="chillaTrackHintPrefix">Track your Chilla in the</span> <button type="button" id="chillaTrackHintLink" class="link-button chilla-track-hint-link" data-i18n="chillaTrackHintLinkText">Calendar tab</button></p>
+          </div>
+
+          <div id="chillaActiveRow" hidden>
+            <p id="chillaNameText" class="chilla-name-text"></p>
+            <p id="chillaStreakText" class="chilla-streak-text"></p>
+            <label class="remember-row chilla-checkbox-row">
+              <input type="checkbox" id="chillaTodayCheckbox">
+              <span data-i18n="markChillaDoneLabel">Mark today's Chilla done</span>
+            </label>
+            <button type="button" id="startNewChillaBtn" class="link-button" data-i18n="startNewChillaBtn">Start a new Chilla</button>
+            <button type="button" id="endChillaBtn" class="link-button link-button-danger" data-i18n="endChillaBtn">End Chilla</button>
+          </div>
+        </section>
+
+
+        <section class="card chakra-card">
+          <h2 data-i18n="chakraTimerTitle">Chakra Energy Timer — current time</h2>
+          <p id="chakraStatus" class="status-text" data-i18n="chakraTimerStatusDefault">
+            Select a location above to see the current chakra period.
+          </p>
+
+          <div id="chakraDetails" hidden>
+            <div class="chakra-current">
+              <div id="chakraCurrentNumber" class="chakra-number"></div>
+              <div class="chakra-current-text">
+                <p id="chakraCurrentName" class="chakra-name"></p>
+                <p id="chakraCurrentEnglish" class="chakra-english"></p>
+              </div>
+            </div>
+
+            <dl class="result-meta">
+              <dt data-i18n="cycleLabel">Cycle</dt>
+              <dd id="chakraCycleLabel"></dd>
+              <dt data-i18n="periodStartedLabel">This period started</dt>
+              <dd id="chakraPeriodStart"></dd>
+              <dt data-i18n="nextChakraBeginsLabel">Next chakra begins</dt>
+              <dd id="chakraPeriodEnd"></dd>
+            </dl>
+
+            <div class="chakra-visual">
+              <div id="chakraSegments" class="chakra-segments"></div>
+            </div>
+
+            <p id="chakraNextInfo" class="result-details"></p>
+          </div>
+        </section>
+
+        <section class="card referral-entry-card">
+          <h2 data-i18n="referralTitle">Referral</h2>
+          <div id="referralEntryFormRow">
+            <p class="referral-entry-label" data-i18n="referralLabel">Were you referred by a friend? Enter their referral code here</p>
+            <div class="referral-entry-row">
+              <input type="text" id="referralEntryCodeInput" class="referral-entry-code-input" placeholder="Referral code" autocomplete="off" autocapitalize="characters" data-i18n-placeholder="referralCodePlaceholder">
+              <button type="button" id="referralEntrySubmitBtn" class="small-button" data-i18n="submitBtn">Submit</button>
+            </div>
+            <p id="referralEntryError" class="field-error" hidden data-i18n="referralError">Please enter a referral code.</p>
+          </div>
+          <p id="referralEntryThanks" class="referral-entry-thanks" hidden data-i18n="referralThanks">Thanks! Your friend will be notified to email admin@chakrainstitute.com to claim their free mantra reward.</p>
+        </section>
+
+        <section class="card donate-card">
+          <h2 data-i18n="donateTitle">Donate</h2>
+          <p data-i18n="donateBody">The Chakra Institute is a 501(c)3 nonprofit. Every contribution goes directly toward preserving and sharing Sri Shyamji's sacred teachings for the benefit of humanity. Donations are tax-deductible.</p>
+          <a class="small-button donate-btn" href="https://www.chakrainstitute.com/donate-1" target="_blank" rel="noopener" data-i18n="donateBtn">Donate</a>
+        </section>
+
+        <section class="card newsletter-signup-card">
+          <h2 data-i18n="newsletterTitle">Join our Newsletter</h2>
+          <div class="ctct-inline-form" data-form-id="194423f7-3d40-4649-9a8c-6fe5954cfb51"></div>
+        </section>
+
+      </div>
+
+      <div id="tab-mantra" class="tab-panel" hidden>
+
+        <div class="sacred-header">
+          <img src="images/Shyamji_Signature_no_background.png" alt="Sri Shyamji's signature" class="sacred-header-signature" id="sacredHeaderSignatureMantra">
+        </div>
+
+        <section class="card mantra-note-card">
+          <h2 data-i18n="mantraNoteTitle">A Note on These Mantras</h2>
+          <p data-i18n="mantraNoteP1">Sri Shyamji Bhatnagar was a rare Nada Yogi — a master of the yoga of sound. The mantras offered here are not background music or casual listening. They carry potent subtle energy and should be approached with the same reverence one would bring to any sacred practice.</p>
+          <h3 data-i18n="mantraNoteSubTitle">Suggestions for Optimum Effects</h3>
+          <p data-i18n="mantraNoteP2">The ideal time to listen is at or just before sunrise. To prepare:</p>
+          <ul class="mantra-note-list">
+            <li data-i18n="mantraNoteLi1">Have a bowel movement and follow with a shower before sunrise.</li>
+            <li data-i18n="mantraNoteLi2">Wearing clean clothing, sit facing east.</li>
+            <li data-i18n="mantraNoteLi3">Play the mantra at a low volume.</li>
+            <li data-i18n="mantraNoteLi4">Listen for forty consecutive days. After forty days you may chant along for an additional 40-day Chilla.</li>
+            <li data-i18n="mantraNoteLi5">While chanting, breathe through the nose only — this supplies the purest prana to the mantra and enhances its effectiveness.</li>
+            <li data-i18n="mantraNoteLi6">After the recording finishes, continue sitting quietly for a few minutes.</li>
+          </ul>
+          <p data-i18n="mantraNoteP3">These sounds are to internalize the senses and should not be played for entertainment.</p>
+          <p data-i18n="mantraNoteP4">If these prerequisites cannot be met initially, listen when your stomach is empty. Keep your eyes open and fixed downward at a single point.</p>
+        </section>
+
+        <section class="card mantra-card">
+          <h2 data-i18n="mantrasTitle">Mantras</h2>
+
+          <div class="mantra-item" data-mantra-key="jai-guru-dev">
+            <div class="mantra-item-row">
+              <button type="button" class="mantra-play-btn" aria-label="Play Jai Guru Dev">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+              </button>
+              <p class="mantra-item-name">Jai Guru Dev</p>
+            </div>
+            <div class="mantra-seek-row">
+              <input type="range" class="mantra-seek" min="0" max="0" step="0.1" value="0" aria-label="Seek — Jai Guru Dev">
+              <span class="mantra-item-time">
+                <span class="mantra-elapsed">0:00</span> / <span class="mantra-duration">0:00</span>
+              </span>
+            </div>
+            <audio class="mantra-audio" preload="none"></audio>
+          </div>
+
+          <div class="mantra-item" data-mantra-key="shree-radhay">
+            <div class="mantra-item-row">
+              <button type="button" class="mantra-play-btn" aria-label="Play Shree Radhay — Heart Chakra Mantra">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+              </button>
+              <p class="mantra-item-name">Shree Radhay — Heart Chakra Mantra</p>
+            </div>
+            <div class="mantra-seek-row">
+              <input type="range" class="mantra-seek" min="0" max="0" step="0.1" value="0" aria-label="Seek — Shree Radhay — Heart Chakra Mantra">
+              <span class="mantra-item-time">
+                <span class="mantra-elapsed">0:00</span> / <span class="mantra-duration">0:00</span>
+              </span>
+            </div>
+            <audio class="mantra-audio" preload="none"></audio>
+          </div>
+        </section>
+
+        <section id="earnMantraCard" class="card earn-mantra-card">
+          <h2 data-i18n="earnMantraTitle">Earn a Free Mantra</h2>
+
+          <div id="referralJoinedBanner" class="referral-joined-banner" hidden>
+            <p><span data-i18n="referralJoinedPrefix">Your friend joined! Email</span> <a href="mailto:admin@chakrainstitute.com">admin@chakrainstitute.com</a> <span data-i18n="referralJoinedSuffix">with your referral code to claim your free mantra reward.</span></p>
+          </div>
+
+          <div class="earn-mantra-option">
+            <h3 data-i18n="option1Title">Option 1 — Social Share</h3>
+            <p data-i18n="option1Body">Share 3 of our posts to your story and tag @SriCentreHomeofChakraInstitute on Instagram. We will send you a free mantra code within 24 hours.</p>
+            <a id="openInstagramBtn" class="small-button" href="https://www.instagram.com/SriCentreHomeofChakraInstitute" target="_blank" rel="noopener" data-i18n="openInstagramBtn">Open Instagram</a>
+          </div>
+
+          <div class="earn-mantra-option">
+            <h3 data-i18n="option2Title">Option 2 — Referral</h3>
+            <p data-i18n="option2Body">Share your unique referral link — when 2 friends download and open the app you earn a free mantra.</p>
+
+            <div id="referralEmailPromptRow">
+              <p class="referral-email-prompt-text" data-i18n="referralEmailPromptText">Enter your email so we can send you your free mantra reward when your friend joins.</p>
+              <div class="field-row">
+                <label for="referralOwnEmailInput" data-i18n="yourEmailLabel">Your email</label>
+                <input type="email" id="referralOwnEmailInput" placeholder="you@example.com">
+              </div>
+              <button type="button" id="referralEmailContinueBtn" class="small-button" data-i18n="continueBtn">Continue</button>
+            </div>
+
+            <div id="referralCodeRow" hidden>
+              <p class="referral-code-label" data-i18n="yourReferralCodeLabel">Your referral code:</p>
+              <p id="referralCodeText" class="referral-code-text"></p>
+              <div class="earn-mantra-option-buttons">
+                <button type="button" id="copyReferralCodeBtn" class="small-button" data-i18n="copyReferralCodeBtn">Copy referral code</button>
+                <button type="button" id="shareReferralCodeBtn" class="small-button" data-i18n="shareReferralCodeBtn">Share referral code</button>
+              </div>
+              <p id="referralCopiedNote" class="referral-copied-note" hidden data-i18n="copiedNote">Copied!</p>
+            </div>
+          </div>
+
+          <p class="earn-mantra-footnote" data-i18n="earnMantraFootnote">Your free mantra code can be applied to any mantra in the app. Codes are single use.</p>
+        </section>
+
+        <section class="card mantra-card">
+          <h2 data-i18n="moreMantrasTitle">More Mantras</h2>
+
+          <div class="mantra-item mantra-item-locked" data-mantra-key="ganapati-deva">
+            <div class="mantra-locked-view">
+              <p class="mantra-item-name">Ganapati Deva</p>
+              <p class="mantra-item-chakra">Chakra 1</p>
+              <div class="mantra-unlock-row">
+                <input type="text" class="mantra-unlock-input" placeholder="Enter unlock code" data-i18n-placeholder="unlockCodePlaceholder" aria-label="Unlock code — Ganapati Deva" autocomplete="off" autocapitalize="characters">
+                <button type="button" class="mantra-unlock-btn small-button" data-i18n="unlockBtn">Unlock</button>
+              </div>
+              <p class="mantra-unlock-error" hidden data-i18n="unlockCodeError">That code isn't valid for this mantra. Please check and try again.</p>
+              <a class="mantra-purchase-btn small-button" href="#" target="_blank" rel="noopener" data-i18n="purchaseMantraBtn">Purchase this mantra — $7.50</a>
+            </div>
+            <div class="mantra-player-view" hidden>
+            <div class="mantra-item-row">
+              <button type="button" class="mantra-play-btn" aria-label="Play Ganapati Deva">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+              </button>
+              <p class="mantra-item-name">Ganapati Deva</p>
+            </div>
+            <div class="mantra-seek-row">
+              <input type="range" class="mantra-seek" min="0" max="0" step="0.1" value="0" aria-label="Seek — Ganapati Deva">
+              <span class="mantra-item-time">
+                <span class="mantra-elapsed">0:00</span> / <span class="mantra-duration">0:00</span>
+              </span>
+            </div>
+            <audio class="mantra-audio" preload="none"></audio>
+            </div>
+          </div>
+
+          <div class="mantra-item mantra-item-locked" data-mantra-key="bajaranga-bali">
+            <div class="mantra-locked-view">
+              <p class="mantra-item-name">Bajaranga Bali</p>
+              <p class="mantra-item-chakra">Chakra 2</p>
+              <div class="mantra-unlock-row">
+                <input type="text" class="mantra-unlock-input" placeholder="Enter unlock code" data-i18n-placeholder="unlockCodePlaceholder" aria-label="Unlock code — Bajaranga Bali" autocomplete="off" autocapitalize="characters">
+                <button type="button" class="mantra-unlock-btn small-button" data-i18n="unlockBtn">Unlock</button>
+              </div>
+              <p class="mantra-unlock-error" hidden data-i18n="unlockCodeError">That code isn't valid for this mantra. Please check and try again.</p>
+              <a class="mantra-purchase-btn small-button" href="#" target="_blank" rel="noopener" data-i18n="purchaseMantraBtn">Purchase this mantra — $7.50</a>
+            </div>
+            <div class="mantra-player-view" hidden>
+            <div class="mantra-item-row">
+              <button type="button" class="mantra-play-btn" aria-label="Play Bajaranga Bali">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+              </button>
+              <p class="mantra-item-name">Bajaranga Bali</p>
+            </div>
+            <div class="mantra-seek-row">
+              <input type="range" class="mantra-seek" min="0" max="0" step="0.1" value="0" aria-label="Seek — Bajaranga Bali">
+              <span class="mantra-item-time">
+                <span class="mantra-elapsed">0:00</span> / <span class="mantra-duration">0:00</span>
+              </span>
+            </div>
+            <audio class="mantra-audio" preload="none"></audio>
+            </div>
+          </div>
+
+          <div class="mantra-item mantra-item-locked" data-mantra-key="rama-chandra-raghuvira">
+            <div class="mantra-locked-view">
+              <p class="mantra-item-name">Rama Chandra Raghuvira</p>
+              <p class="mantra-item-chakra">Chakra 3</p>
+              <div class="mantra-unlock-row">
+                <input type="text" class="mantra-unlock-input" placeholder="Enter unlock code" data-i18n-placeholder="unlockCodePlaceholder" aria-label="Unlock code — Rama Chandra Raghuvira" autocomplete="off" autocapitalize="characters">
+                <button type="button" class="mantra-unlock-btn small-button" data-i18n="unlockBtn">Unlock</button>
+              </div>
+              <p class="mantra-unlock-error" hidden data-i18n="unlockCodeError">That code isn't valid for this mantra. Please check and try again.</p>
+              <a class="mantra-purchase-btn small-button" href="#" target="_blank" rel="noopener" data-i18n="purchaseMantraBtn">Purchase this mantra — $7.50</a>
+            </div>
+            <div class="mantra-player-view" hidden>
+            <div class="mantra-item-row">
+              <button type="button" class="mantra-play-btn" aria-label="Play Rama Chandra Raghuvira">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+              </button>
+              <p class="mantra-item-name">Rama Chandra Raghuvira</p>
+            </div>
+            <div class="mantra-seek-row">
+              <input type="range" class="mantra-seek" min="0" max="0" step="0.1" value="0" aria-label="Seek — Rama Chandra Raghuvira">
+              <span class="mantra-item-time">
+                <span class="mantra-elapsed">0:00</span> / <span class="mantra-duration">0:00</span>
+              </span>
+            </div>
+            <audio class="mantra-audio" preload="none"></audio>
+            </div>
+          </div>
+
+          <div class="mantra-item mantra-item-locked" data-mantra-key="santoshi-mata">
+            <div class="mantra-locked-view">
+              <p class="mantra-item-name">Santoshi Mata</p>
+              <p class="mantra-item-chakra">Chakra 4</p>
+              <div class="mantra-unlock-row">
+                <input type="text" class="mantra-unlock-input" placeholder="Enter unlock code" data-i18n-placeholder="unlockCodePlaceholder" aria-label="Unlock code — Santoshi Mata" autocomplete="off" autocapitalize="characters">
+                <button type="button" class="mantra-unlock-btn small-button" data-i18n="unlockBtn">Unlock</button>
+              </div>
+              <p class="mantra-unlock-error" hidden data-i18n="unlockCodeError">That code isn't valid for this mantra. Please check and try again.</p>
+              <a class="mantra-purchase-btn small-button" href="#" target="_blank" rel="noopener" data-i18n="purchaseMantraBtn">Purchase this mantra — $7.50</a>
+            </div>
+            <div class="mantra-player-view" hidden>
+            <div class="mantra-item-row">
+              <button type="button" class="mantra-play-btn" aria-label="Play Santoshi Mata">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+              </button>
+              <p class="mantra-item-name">Santoshi Mata</p>
+            </div>
+            <div class="mantra-seek-row">
+              <input type="range" class="mantra-seek" min="0" max="0" step="0.1" value="0" aria-label="Seek — Santoshi Mata">
+              <span class="mantra-item-time">
+                <span class="mantra-elapsed">0:00</span> / <span class="mantra-duration">0:00</span>
+              </span>
+            </div>
+            <audio class="mantra-audio" preload="none"></audio>
+            </div>
+          </div>
+
+          <div class="mantra-item mantra-item-locked" data-mantra-key="krishna-radhay-bol">
+            <div class="mantra-locked-view">
+              <p class="mantra-item-name">Krishna Radhay Bol</p>
+              <p class="mantra-item-chakra">Hrit Chakra</p>
+              <div class="mantra-unlock-row">
+                <input type="text" class="mantra-unlock-input" placeholder="Enter unlock code" data-i18n-placeholder="unlockCodePlaceholder" aria-label="Unlock code — Krishna Radhay Bol" autocomplete="off" autocapitalize="characters">
+                <button type="button" class="mantra-unlock-btn small-button" data-i18n="unlockBtn">Unlock</button>
+              </div>
+              <p class="mantra-unlock-error" hidden data-i18n="unlockCodeError">That code isn't valid for this mantra. Please check and try again.</p>
+              <a class="mantra-purchase-btn small-button" href="#" target="_blank" rel="noopener" data-i18n="purchaseMantraBtn">Purchase this mantra — $7.50</a>
+            </div>
+            <div class="mantra-player-view" hidden>
+            <div class="mantra-item-row">
+              <button type="button" class="mantra-play-btn" aria-label="Play Krishna Radhay Bol">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+              </button>
+              <p class="mantra-item-name">Krishna Radhay Bol</p>
+            </div>
+            <div class="mantra-seek-row">
+              <input type="range" class="mantra-seek" min="0" max="0" step="0.1" value="0" aria-label="Seek — Krishna Radhay Bol">
+              <span class="mantra-item-time">
+                <span class="mantra-elapsed">0:00</span> / <span class="mantra-duration">0:00</span>
+              </span>
+            </div>
+            <audio class="mantra-audio" preload="none"></audio>
+            </div>
+          </div>
+
+          <div class="mantra-item mantra-item-locked" data-mantra-key="ekongkara">
+            <div class="mantra-locked-view">
+              <p class="mantra-item-name">Ekongkara</p>
+              <p class="mantra-item-chakra">Chakra 5</p>
+              <div class="mantra-unlock-row">
+                <input type="text" class="mantra-unlock-input" placeholder="Enter unlock code" data-i18n-placeholder="unlockCodePlaceholder" aria-label="Unlock code — Ekongkara" autocomplete="off" autocapitalize="characters">
+                <button type="button" class="mantra-unlock-btn small-button" data-i18n="unlockBtn">Unlock</button>
+              </div>
+              <p class="mantra-unlock-error" hidden data-i18n="unlockCodeError">That code isn't valid for this mantra. Please check and try again.</p>
+              <a class="mantra-purchase-btn small-button" href="#" target="_blank" rel="noopener" data-i18n="purchaseMantraBtn">Purchase this mantra — $7.50</a>
+            </div>
+            <div class="mantra-player-view" hidden>
+            <div class="mantra-item-row">
+              <button type="button" class="mantra-play-btn" aria-label="Play Ekongkara">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+              </button>
+              <p class="mantra-item-name">Ekongkara</p>
+            </div>
+            <div class="mantra-seek-row">
+              <input type="range" class="mantra-seek" min="0" max="0" step="0.1" value="0" aria-label="Seek — Ekongkara">
+              <span class="mantra-item-time">
+                <span class="mantra-elapsed">0:00</span> / <span class="mantra-duration">0:00</span>
+              </span>
+            </div>
+            <audio class="mantra-audio" preload="none"></audio>
+            </div>
+          </div>
+
+          <div class="mantra-item mantra-item-locked" data-mantra-key="gayatri">
+            <div class="mantra-locked-view">
+              <p class="mantra-item-name">Gayatri</p>
+              <p class="mantra-item-chakra">Chakra 6</p>
+              <div class="mantra-unlock-row">
+                <input type="text" class="mantra-unlock-input" placeholder="Enter unlock code" data-i18n-placeholder="unlockCodePlaceholder" aria-label="Unlock code — Gayatri" autocomplete="off" autocapitalize="characters">
+                <button type="button" class="mantra-unlock-btn small-button" data-i18n="unlockBtn">Unlock</button>
+              </div>
+              <p class="mantra-unlock-error" hidden data-i18n="unlockCodeError">That code isn't valid for this mantra. Please check and try again.</p>
+              <a class="mantra-purchase-btn small-button" href="#" target="_blank" rel="noopener" data-i18n="purchaseMantraBtn">Purchase this mantra — $7.50</a>
+            </div>
+            <div class="mantra-player-view" hidden>
+            <div class="mantra-item-row">
+              <button type="button" class="mantra-play-btn" aria-label="Play Gayatri">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+              </button>
+              <p class="mantra-item-name">Gayatri</p>
+            </div>
+            <div class="mantra-seek-row">
+              <input type="range" class="mantra-seek" min="0" max="0" step="0.1" value="0" aria-label="Seek — Gayatri">
+              <span class="mantra-item-time">
+                <span class="mantra-elapsed">0:00</span> / <span class="mantra-duration">0:00</span>
+              </span>
+            </div>
+            <audio class="mantra-audio" preload="none"></audio>
+            </div>
+          </div>
+
+          <div class="mantra-item mantra-item-locked" data-mantra-key="narayana">
+            <div class="mantra-locked-view">
+              <p class="mantra-item-name">Vasudeva</p>
+              <p class="mantra-item-chakra">Soma Chakra</p>
+              <div class="mantra-unlock-row">
+                <input type="text" class="mantra-unlock-input" placeholder="Enter unlock code" data-i18n-placeholder="unlockCodePlaceholder" aria-label="Unlock code — Vasudeva" autocomplete="off" autocapitalize="characters">
+                <button type="button" class="mantra-unlock-btn small-button" data-i18n="unlockBtn">Unlock</button>
+              </div>
+              <p class="mantra-unlock-error" hidden data-i18n="unlockCodeError">That code isn't valid for this mantra. Please check and try again.</p>
+              <a class="mantra-purchase-btn small-button" href="#" target="_blank" rel="noopener" data-i18n="purchaseMantraBtn">Purchase this mantra — $7.50</a>
+            </div>
+            <div class="mantra-player-view" hidden>
+            <div class="mantra-item-row">
+              <button type="button" class="mantra-play-btn" aria-label="Play Vasudeva">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+              </button>
+              <p class="mantra-item-name">Vasudeva</p>
+            </div>
+            <div class="mantra-seek-row">
+              <input type="range" class="mantra-seek" min="0" max="0" step="0.1" value="0" aria-label="Seek — Vasudeva">
+              <span class="mantra-item-time">
+                <span class="mantra-elapsed">0:00</span> / <span class="mantra-duration">0:00</span>
+              </span>
+            </div>
+            <audio class="mantra-audio" preload="none"></audio>
+            </div>
+          </div>
+
+          <div class="mantra-item mantra-item-locked" data-mantra-key="om">
+            <div class="mantra-locked-view">
+              <p class="mantra-item-name">Narayana</p>
+              <p class="mantra-item-chakra">Chakra 7</p>
+              <div class="mantra-unlock-row">
+                <input type="text" class="mantra-unlock-input" placeholder="Enter unlock code" data-i18n-placeholder="unlockCodePlaceholder" aria-label="Unlock code — Narayana" autocomplete="off" autocapitalize="characters">
+                <button type="button" class="mantra-unlock-btn small-button" data-i18n="unlockBtn">Unlock</button>
+              </div>
+              <p class="mantra-unlock-error" hidden data-i18n="unlockCodeError">That code isn't valid for this mantra. Please check and try again.</p>
+              <a class="mantra-purchase-btn small-button" href="#" target="_blank" rel="noopener" data-i18n="purchaseMantraBtn">Purchase this mantra — $7.50</a>
+            </div>
+            <div class="mantra-player-view" hidden>
+            <div class="mantra-item-row">
+              <button type="button" class="mantra-play-btn" aria-label="Play Narayana">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"></path></svg>
+              </button>
+              <p class="mantra-item-name">Narayana</p>
+            </div>
+            <div class="mantra-seek-row">
+              <input type="range" class="mantra-seek" min="0" max="0" step="0.1" value="0" aria-label="Seek — Narayana">
+              <span class="mantra-item-time">
+                <span class="mantra-elapsed">0:00</span> / <span class="mantra-duration">0:00</span>
+              </span>
+            </div>
+            <audio class="mantra-audio" preload="none"></audio>
+            </div>
+          </div>
+        </section>
+
+        <section class="card donate-card">
+          <h2>Donate</h2>
+          <p>The Chakra Institute is a 501(c)3 nonprofit. Every contribution goes directly toward preserving and sharing Sri Shyamji's sacred teachings for the benefit of humanity. Donations are tax-deductible.</p>
+          <a class="small-button donate-btn" href="https://www.chakrainstitute.com/donate-1" target="_blank" rel="noopener">Donate</a>
+        </section>
+      </div>
+
+      <div id="tab-practice" class="tab-panel" hidden>
+
+        <div class="sacred-header">
+          <img src="images/Shyamji_Signature_no_background.png" alt="Sri Shyamji's signature" class="sacred-header-signature" id="sacredHeaderSignaturePractice">
+        </div>
+
+        <section class="card calendar-card">
+          <div class="calendar-header">
+            <button type="button" id="calPrevBtn" class="icon-button" aria-label="Previous month">‹</button>
+            <h2 id="calMonthLabel" class="calendar-month-label"></h2>
+            <button type="button" id="calNextBtn" class="icon-button" aria-label="Next month">›</button>
+          </div>
+
+          <div class="calendar-weekdays">
+            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+          </div>
+
+          <div id="calendarGrid" class="calendar-grid"></div>
+
+          <div class="calendar-legend">
+            <span class="legend-item"><span class="mark-check">✓</span> <span data-i18n="legendCorrect">Correct at sunrise</span></span>
+            <span class="legend-item"><span class="mark-x mark-x-corrected">✗</span> <span data-i18n="legendIncorrectCorrected">Incorrect, but corrected</span></span>
+            <span class="legend-item"><span class="mark-x mark-x-not-corrected">✗</span> <span data-i18n="legendIncorrectNotCorrected">Incorrect, not corrected</span></span>
+            <span class="legend-item"><span class="mark-dot" style="background:#8b5cf6"></span> <span data-i18n="legendChillaDay">Chilla day (40-day mantra commitment)</span></span>
+          </div>
+          <div class="share-row">
+            <button type="button" id="sharePracticeBtn" class="link-button share-btn" data-i18n="shareBtn">Share</button>
+            <span id="sharePracticeCopiedNote" class="share-copied-note" hidden></span>
+          </div>
+        </section>
+
+        <section class="card assessment-history-card">
+          <h2 data-i18n="quizHistoryTitle">Quiz History</h2>
+          <p id="assessmentHistoryEmpty" class="status-text" data-i18n="noQuizzesYet">No quizzes taken yet.</p>
+          <div id="assessmentHistoryList" class="assessment-history-list"></div>
+        </section>
+      </div>
+
+      <div id="tab-learn" class="tab-panel" hidden>
+
+        <div class="sacred-header">
+          <img src="images/Shyamji_Signature_no_background.png" alt="Sri Shyamji's signature" class="sacred-header-signature" id="sacredHeaderSignatureLearn">
+        </div>
+
+        <section class="card learn-accordion-card">
+          <h2 data-i18n="learnTitle">Learn</h2>
+
+        <h3 class="accordion-group-header" data-i18n="learnGroupAbout">About Sri Shyamji &amp; This Work</h3>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-1-what-is-a-nada-yogi-header" aria-expanded="false" aria-controls="learn-1-what-is-a-nada-yogi-panel">
+            <span class="accordion-title" data-i18n="learnNadaYogiTitle">What is a Nada Yogi?</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-1-what-is-a-nada-yogi-panel" role="region" aria-labelledby="learn-1-what-is-a-nada-yogi-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP1">Nada means sacred sound. A Nada Yogi is one who has dedicated their life to mastering the subtle science of sound — not as music or performance, but as a precise technology for transformation of consciousness.</p>
+<p data-i18n="learnP2">All sound carries vibration, and we feel this intuitively. Nails on a chalkboard versus a beautiful melody — the difference is immediate and physical. Beautiful music can move us deeply, inspire us, even bring us to tears. Devotional music across every spiritual tradition reaches further — it can open the heart. But even the most beautiful worldly music works within the first grouping of chakras — the physical, relational, and personal realms.</p>
+<p data-i18n="learnP3">A true Nada Yogi works at a different level entirely. Sri Shyamji Bhatnagar developed the rare ability to produce what he called soorya akasha — a golden vibrational quality that moves beyond the heart and works directly on the subtle body. His voice carries the capacity to encourage the opening of the microchakras™ — the 147 subtle energy centers that govern our thoughts, feelings, and physical experience. People report sensations, shifts, and openings during and after listening — particularly as they become more sensitized through proper habits and purification practice. But the sound works on the system regardless, whether one feels it immediately or not.</p>
+<p data-i18n="learnP4">Very few human beings who have ever lived have possessed this gift. This is why the archive of Sri Shyamji's recordings is of the highest importance — he left not just philosophy or teaching, but actual vibrational technology. A treasure of sounds that can shift human experience and open the door to divine consciousness — reverberating forward for all of humanity, for eternity, available to all who are willing to use it.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-2-who-was-sri-shyamji-bhatnagar-1936-2025-header" aria-expanded="false" aria-controls="learn-2-who-was-sri-shyamji-bhatnagar-1936-2025-panel">
+            <span class="accordion-title" data-i18n="learnWhoWasShyamjiTitle">Who was Sri Shyamji Bhatnagar? (1936–2025)</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-2-who-was-sri-shyamji-bhatnagar-1936-2025-panel" role="region" aria-labelledby="learn-2-who-was-sri-shyamji-bhatnagar-1936-2025-header">
+            <div class="accordion-panel-inner">
+<img src="images/IMG_2278.jpg" alt="Sri Shyamji Bhatnagar" class="shyamji-portrait-photo" id="shyamjiPortraitPhoto">
+<p data-i18n="learnP5">Sri Shyamji Bhatnagar was the discoverer of the Microchakras™, a unique healer, and the founder of the Chakra Institute. Born in India, at age 12 he met his guru in the Himalayas and was initiated into the Shaivite tradition of Tantra — receiving a rare oral tradition of sacred sounds (Nada Yoga), breath (Svar Yoga), and spiritual wisdom passed down through generations.</p>
+<p data-i18n="learnP6">In 1966, during an intensive Himalayan pilgrimage, he had a vision of his own chakras — vortices of light emanating throughout his subtle body. This was the beginning of a path that led to one of the most significant contributions to the living tradition of yoga: the discovery of the 147 microchakras. In five hours of automatic writing in 1967, the precise details of their functioning were revealed — structures never before recognized in yogic literature.</p>
+<p data-i18n="learnP7">He established the Chakra Institute in 1970 as a nonprofit organization dedicated to the integration of ancient Indian wisdom and artistic expression with modern science and psychology. Over more than fifty years he taught at institutions including NYU, the Sorbonne, Cambridge University, and Princeton's neuropsychiatric institute. He also performed at Carnegie Hall and Lincoln Center in New York with Ravi Shankar, among other places.</p>
+<p data-i18n="learnP8">Thousands of students across India, Europe, North and South America experienced profound transformation through his work. In the spring of 2025, Sri Shyamji left his body peacefully, with a slight smile on his face — leaving behind a treasure of sound, teaching, and living transmission that the Chakra Institute continues to preserve and share for the benefit of all of humanity.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-10-innertuning-and-microchakra-psychology-header" aria-expanded="false" aria-controls="learn-10-innertuning-and-microchakra-psychology-panel">
+            <span class="accordion-title" data-i18n="learnInnerTuningTitle">InnerTuning™ and Microchakra Psychology™</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-10-innertuning-and-microchakra-psychology-panel" role="region" aria-labelledby="learn-10-innertuning-and-microchakra-psychology-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP9">InnerTuning™ is Sri Shyamji's method for bringing the physical, subtle, and causal bodies into balance — like tuning a fine instrument so that it can produce its full range and depth of sound.</p>
+<p data-i18n="learnP10">At its foundation is Microchakra Psychology™ — the discovery that each of the seven classical chakras is composed of 21 microchakras, making 147 in total. These are the precise pathways through which the light of the chakras flows. Blockages in the microchakras manifest as stress, anxiety, physical illness, emotional difficulty, and spiritual stagnation. When open, life flows with clarity, creativity, and joy.</p>
+<p data-i18n="learnP11">InnerTuning™ practices — sacred sound, mantra, breath awareness, fasting, meditation, and the Prana Calendar — are designed to open these pathways progressively and safely.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="accordion-group-header" data-i18n="learnGroupChakraSystem">The Chakra System</h3>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-14-the-chakra-system-header" aria-expanded="false" aria-controls="learn-14-the-chakra-system-panel">
+            <span class="accordion-title" data-i18n="learnChakraSystemTitle">The Chakra System</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-14-the-chakra-system-panel" role="region" aria-labelledby="learn-14-the-chakra-system-header">
+            <div class="accordion-panel-inner">
+<h4 class="accordion-subhead">Chakra 1 — Muladhara (Root)</h4>
+<p data-i18n="learnP12">The first chakra is the foundation of the entire system. It governs our relationship with the physical world — the body, survival, security, and our capacity to be present in physical life. When functioning well it produces physical vitality, healthy rhythms, the ability to provide for oneself, and a natural sense of groundedness and safety. When blocked, it can manifest as insecurity, poor physical habits, difficulty with routine, financial instability, or an inability to feel at home in the body or in life. The first chakra develops earliest — its patterns often rooted in experiences from the womb and early childhood.</p>
+<h4 class="accordion-subhead">Chakra 2 — Svadhisthana (Sacral)</h4>
+<p data-i18n="learnP13">The second chakra governs relating and exchange — with others, with desire, with the creative and sexual forces of life. It is the chakra of relationship, diplomacy, and belonging. When open it supports healthy, nourishing connections and a natural ease in social life. When blocked it can produce patterns of drama, possessiveness, sexual confusion, excessive social need, or relationships that consume far more energy than they restore. Much of what drives human behavior — attraction, jealousy, longing, the need for community — originates here.</p>
+<h4 class="accordion-subhead">Chakra 3 — Manipura (Solar Plexus)</h4>
+<p data-i18n="learnP14">The third chakra is the seat of personal power, ego, and one's role in the world. It governs assertion, achievement, confidence, and social identity. Most people in modern society live primarily in the first three chakras — and the third is perhaps the most active. It can manifest as healthy confidence and purposeful ambition, or as excessive ego, competitiveness, self-absorption, the need to prove oneself, or conversely, when under-developed, passivity and an inability to assert one's place in the world. Sri Shyamji considered this chakra the focal point for most people's work.</p>
+<h4 class="accordion-subhead">Chakra 4 — Anahata (Heart)</h4>
+<p data-i18n="learnP15">The fourth chakra is the seat of joy, contentment, and the capacity to give and receive love freely. It is the bridge between the lower three chakras and the higher ones — the point where personal survival and ego begin to dissolve into something larger. When blocked it can manifest as sadness, emotional heaviness, difficulty surrendering to life, or the inability to love without calculation. When opening, a genuine devotional quality begins to arise — a trust in the flow of life, a capacity for forgiveness, and the first stirrings of unconditional love. It takes real inner work to arrive here.</p>
+<h4 class="accordion-subhead">Hrit — The Inner Heart</h4>
+<p data-i18n="learnP16">The heart of the heart, the Hrit chakra — sometimes called the spiritual heart or the seat of the soul. It is here that a deep, unwavering devotion to the divine becomes the central reality of one's life. The Hrit is associated with unconditional love, spiritual purity, forgiveness, and the direct sense of the divine presence. It is here the aspirant, with the grace of the guru, may touch the fundamental vibration, Shabda Brahma, the eternal presence which can be met through sound. (While Hrit is considered a minor chakra beyond the classical seven, it is included here for depth.)</p>
+<h4 class="accordion-subhead">Chakra 5 — Vishuddha (Throat)</h4>
+<p data-i18n="learnP17">The fifth chakra is the threshold of direct experience — the point where the seeker begins to encounter the divine not as a concept but as a living reality. It is the chakra of sacred sound, akasha (space), creativity, and the opening of the inner guru. Here one begins to recognize the universe as frequencies of sound against a background of profound silence. A person in this chakra may be ready for a true external teacher whose lifestyle and presence can assist the opening of this inner guidance</p>
+<h4 class="accordion-subhead">Chakra 6 — Ajna (Third Eye)</h4>
+<p data-i18n="learnP18">The sixth chakra is for the serious, dedicated seeker whose primary motivation has genuinely shifted away from worldly life toward the divine. It governs intuition, wisdom, and the direct perception of truth — not as belief or philosophy but as living experience. One at this level has had real encounters with the divine but has not yet fully resolved the sense of separation between self and that reality. At this point the obligations to the external world are few and the seeker will have to decide if they will assist disciples as a part of their path onward.</p>
+<h4 class="accordion-subhead">Soma Chakra</h4>
+<p data-i18n="learnP19">The Soma chakra sits between the sixth and seventh — a subtle center associated with a steady, unwavering contact with the divine that goes beyond meditation sessions. It is the experience of the divine not as something one reaches toward but as a state one begins to abide in. The nectar of divine bliss becomes available here, the triangle of 3 Bindus, which describes the core energies of life, the secrets of the universe, are being distilled to the aspirant. (While Soma is considered a minor chakra beyond the classical seven, it is included here for depth.)</p>
+<h4 class="accordion-subhead">Chakra 7 — Sahasrara (Crown)</h4>
+<p data-i18n="learnP20">The seventh chakra is the realm of unity consciousness — the dissolution of the boundary between self and the divine. It is not a destination one arrives at through effort alone but a recognition that unfolds when all the conditions below have been sufficiently purified. Om, the primordial sound from which all other sounds arise, works at this most subtle level. Sri Shyamji taught that to truly abide in this chakra is the fulfillment of the human journey — the drop recognizing itself as the ocean.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-3-chakras-and-human-development-header" aria-expanded="false" aria-controls="learn-3-chakras-and-human-development-panel">
+            <span class="accordion-title" data-i18n="learnChakraDevelopmentTitle">Chakras and Human Development</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-3-chakras-and-human-development-panel" role="region" aria-labelledby="learn-3-chakras-and-human-development-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP21">The chakra system is a developmental theory as well as a hierarchy of consciousness. It reflects striking similarities with well-accepted psychological frameworks — Maslow's hierarchy of needs, Erikson's stages of development — while going far deeper than either.</p>
+<p data-i18n="learnP22">Each chakra represents both a dimension of existence and a state of awareness. A person will be primarily motivated by the wants and needs of their primary chakra consciousness. Most people spend their lives in the first three:</p>
+<ul class="plain-list">
+<li>1st Chakra — Survival and security</li>
+<li>2nd Chakra — Relating and exchange</li>
+<li>3rd Chakra — Personal power and social role</li>
+<li>4th Chakra — Unconditional love and devotion</li>
+<li>5th Chakra — Creativity, communication and divine encounter</li>
+<li>6th Chakra — Wisdom, focus on non-duality</li>
+<li>7th Chakra — Beyond duality</li>
+</ul>
+<p data-i18n="learnP23">Once the basis of the lower three chakras is established and sufficiently purified, a devotional attitude naturally arises — and the possibility of moving higher in spiritual evolution opens. It takes real work to reach the heart chakra. Much of the love and care people express comes through the fourth microchakras of the lower chakras. True unconditional love is rarer — more associated with the great saints of all cultures.</p>
+<p data-i18n="learnP24">Some chakra functioning is established in childhood — through experiences from the womb, birth, and early life. Other aspects can continue to be addressed and improved throughout life. Both champion patterns — those that assist the ascent of consciousness — and saboteur patterns — those that delay it — are present in every person.</p>
+<p data-i18n="learnP25">The functioning of the right channel Microchakras is largely set in early childhood and continues to influence our functioning throughout life. Through Purification, lifestyle change, and Mantra practice, we can positively impact the Microchakras of the left channel, creating real and lasting change, bringing relief from the challenges that were established in those early years.</p>
+<p data-i18n="learnP26">Real progress requires certain purifications and practices that help the system support the advancement of consciousness. Give yourself the gift of the proper environment for growth — as a plant given water, light and good soil will naturally reach toward the sun, the intelligence within you knows exactly what to do when the conditions are right.</p>
+<p data-i18n-html="learnP27">For the deepest and most lasting transformation, the Three Body Purification Retreat is our primary recommendation. For a personal Microchakra analysis, consultations with the Chakra Institute are also available. Contact admin@chakrainstitute.com or visit <a href="https://www.chakrainstitute.com" target="_blank" rel="noopener">www.chakrainstitute.com</a></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-9-the-chakra-energy-chart-header" aria-expanded="false" aria-controls="learn-9-the-chakra-energy-chart-panel">
+            <span class="accordion-title" data-i18n="learnChakraEnergyChartTitle">The Chakra Energy Chart</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-9-the-chakra-energy-chart-panel" role="region" aria-labelledby="learn-9-the-chakra-energy-chart-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP28">Every 24 hours, energy cycles twice through all seven chakras — once from sunrise to sunset, and once from sunset to the next sunrise. Each cycle is divided into seven equal periods, one per chakra, in order from the third chakra at sunrise through the seventh and back again.</p>
+<p data-i18n="learnP29">The app calculates this in real time for your location using your local sunrise and sunset times. It shows you which chakra is currently active, when the current period began, and when the next one starts.</p>
+<p data-i18n="learnP30">Different activities are best undertaken at certain chakra times. Ideally one does not speak until the energy has reached the fifth chakra for the day — honoring the silence of the early morning hours as sacred preparation. Elimination and cleansing are best done in the first chakra period before sunrise. The further one lives from the equator, the more this rhythm can feel disrupted, and the more supportive these practices become.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="accordion-group-header" id="learnGroupPranaCalendarPractice" data-i18n="learnGroupPranaPractice">The Prana Calendar Practice</h3>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-4-what-is-svar-yoga-header" aria-expanded="false" aria-controls="learn-4-what-is-svar-yoga-panel">
+            <span class="accordion-title" data-i18n="learnSvarYogaTitle">What is Svar Yoga</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-4-what-is-svar-yoga-panel" role="region" aria-labelledby="learn-4-what-is-svar-yoga-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP31">Svar Yoga means "unification through breath." It is among the most precise and practical of the yogic sciences — and until recently, one of the least known even in India.</p>
+<p data-i18n="learnP32">The ancient observers of this science noticed that the breath does not flow equally through both nostrils at once. One nostril is always slightly dominant, and this dominance shifts throughout the day in a predictable rhythm. By studying this rhythm over many years and many individuals, they mapped its relationship to the moon, to body chemistry, to states of mind, and to health.</p>
+<p data-i18n="learnP33">The core discovery is this: the nasal cycle mirrors the lunar cycle. At the new moon, the left nostril begins the fortnight. At the full moon, the right nostril begins. Every three days the dominant nostril switches — creating a rhythm that, when it runs cleanly, keeps the organism synchronized with the larger rhythms of the cosmos.</p>
+<p data-i18n="learnP34">When the natural cycle is disturbed — when the wrong nostril is dominant at the wrong time — body chemistry becomes subtly imbalanced. Physical and emotional disturbances become more likely. The simple act of consciously switching the breath (by lying on the side of the dominant nostril, or using a gentle cotton plug) restores the balance. Many practitioners report that catching a disturbance early, at the very first sign of illness or agitation, and immediately changing the nostril prevents it from taking hold.</p>
+<p data-i18n="learnP35">Svar Yoga does not require any special equipment, any particular belief, or years of preparation. It requires only attention, specifically, attention at sunrise. Waking 20 minutes before sunrise and sitting quietly until the sun rises is the essential practice. Note which nostril opens first. If it matches the calendar, the fortnight is well-supported. If it doesn't, the breath can be corrected before the day begins.</p>
+<p data-i18n="learnP36">This is the practice the Prana Calendar supports.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-5-the-nasal-cycle-and-the-brain-header" aria-expanded="false" aria-controls="learn-5-the-nasal-cycle-and-the-brain-panel">
+            <span class="accordion-title" data-i18n="learnNasalCycleTitle">The Nasal Cycle and the Brain</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-5-the-nasal-cycle-and-the-brain-panel" role="region" aria-labelledby="learn-5-the-nasal-cycle-and-the-brain-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP37">Most people assume they breathe through both nostrils equally. However, the body alternates — one nostril dominates for roughly an hour, then the other takes over, in a continuous rhythm that runs day and night, even during sleep.</p>
+<p data-i18n="learnP38">This alternation is not random. It is directly linked to the shifting of dominance between the brain's two hemispheres. When the right nostril is dominant, the left hemisphere becomes more active — the verbal, analytical, goal-oriented, heat-generating mode. When the left nostril is dominant, the right hemisphere leads — the receptive, creative, cooling, emotionally attuned mode.</p>
+<p data-i18n="learnP39">The body chemistry shifts too. Right nostril operation makes the system slightly more acidic and hot. Left nostril operation is alkaline and cooling. This is why traditional Svar Yoga assigns different activities to each nostril — eating, bathing, defecation and physical labor suit the right; meditation, drinking liquids, urination, long-term work, and creative pursuits suit the left.</p>
+<p data-i18n="learnP40">What makes this especially fascinating is the ionic dimension. The air we breathe carries electrically charged particles called ions. Environments rich in negative ions — ocean air, forests after rain, the atmosphere just before sunrise — support the receptive, creative, lunar state. High positive ion environments — solar flares, dry winds, urban pollution, screens — push the system toward agitation and reactivity. Research has found correlations between periods of intense solar activity (such as solar flares) and increased human restlessness, conflict, and aggression. Quieter solar periods tend to coincide with surges in art, discovery, and cooperation. The atmosphere itself has a polarity — and your nostrils are the instrument through which your body negotiates with it.</p>
+<p data-i18n="learnP41">The most important moment in this daily cycle is sunrise. At the exact moment the sun rises, both nostrils briefly equalize — a natural reset point. Which nostril opens first after that moment determines the tone of the morning and reflects whether your system is synchronized with the lunar cycle. This is what the Prana Calendar tracks.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-6-how-to-use-the-prana-calendar-header" aria-expanded="false" aria-controls="learn-6-how-to-use-the-prana-calendar-panel">
+            <span class="accordion-title" data-i18n="howToUseTitle">How to Use the Prana Calendar</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-6-how-to-use-the-prana-calendar-panel" role="region" aria-labelledby="learn-6-how-to-use-the-prana-calendar-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP42">Rise at least 30 minutes before sunrise. After cleansing, sit quietly for 7 to 10 minutes before sunrise until one minute after. Check which nostril is more open — this is your dominant breath.</p>
+<p data-i18n="learnP43">Compare it to what the app shows for your location that day. If they match, mark it correct. If not, you can shift the breath by lying on the opposite side of the blocked nostril with a pillow under the armpit. In healthy people this works within seconds to ten minutes.</p>
+<p data-i18n="learnP44">The app calculates the correct nostril for your exact location based on the lunar cycle and your local sunrise time. Checking your breath at sunrise — even just around the new and full moons — is a powerful and simple practice.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-8-what-is-a-chilla-ch-ee-lah-header" aria-expanded="false" aria-controls="learn-8-what-is-a-chilla-ch-ee-lah-panel">
+            <span class="accordion-title" data-i18n="learnChillaTitle">What is a Chilla (Ch-ee-Lah)</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-8-what-is-a-chilla-ch-ee-lah-panel" role="region" aria-labelledby="learn-8-what-is-a-chilla-ch-ee-lah-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP45">A Chilla is a 40-day commitment to a single mantra practice. Sustained, focused repetition of a sacred sound over 40 consecutive days creates lasting transformation in the subtle body.</p>
+<p data-i18n="learnP46">Begin ideally around a new or full moon. Rise before sunrise, sit facing east, and play the mantra at low volume — listen deeply before chanting along. Breathe through the nose only. After the mantra ends, sit quietly for a few minutes before beginning your day.</p>
+<p data-i18n="learnP47">The same time and place each day is ideal. If sunrise practice is not possible, the next best option is any consistent time with an empty stomach in a clean, quiet space.</p>
+<p data-i18n="learnP48">Track your Chilla in the app. If you miss a day your streak resets — but your Chilla continues. Begin again with renewed dedication.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-15-moon-cycles-and-cosmic-timing-header" aria-expanded="false" aria-controls="learn-15-moon-cycles-and-cosmic-timing-panel">
+            <span class="accordion-title" data-i18n="learnMoonCyclesTitle">Moon Cycles &amp; Cosmic Timing</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-15-moon-cycles-and-cosmic-timing-panel" role="region" aria-labelledby="learn-15-moon-cycles-and-cosmic-timing-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP49">The ancient seers mapped the cosmos not as something distant and abstract but as a living rhythm that moves through the human body every day. The app reflects three of these rhythms simultaneously.</p>
+<h4 class="accordion-subhead">The Planetary Week</h4>
+<p data-i18n="learnP50">Each day of the week is governed by a planetary energy — and this is not a modern invention. The names of the days themselves carry the memory across cultures and languages. Sunday is the Sun's day. Monday is the Moon's day — Lunes in Spanish, Lundi in French, both directly from Luna. Tuesday is Mars (Martes, Mardi). Wednesday is Mercury (Miércoles, Mercredi). Thursday is Jupiter — Thor's day in Norse, Jueves in Spanish from Jovis. Friday is Venus — Freya's day, Viernes, Vendredi. Saturday is Saturn's day across almost every language. The planetary week is one of humanity's most enduring shared inheritances.</p>
+<p data-i18n="learnP51">Each planet carries a distinct quality of energy that influences mood, perception, and body chemistry. Wearing the color associated with that day's planet helps the eyes, skin, and energy field absorb its quality. Eating foods of that color deepens the effect. This is why the app shows you the day's color and planet — as a practical invitation to align yourself with what is already moving through the atmosphere.</p>
+<h4 class="accordion-subhead">The 27 Nakshatras</h4>
+<p data-i18n="learnP52">As the moon travels through the sky each month it passes through 27 distinct regions of the zodiac called Nakshatras — lunar mansions, each with its own presiding deity, planetary ruler, and quality of energy. The moon spends roughly one day in each. Unlike the sun signs most people know from Western astrology, the Nakshatras track the moon's actual position in the constellations using sidereal (star-based) calculation. Tap the Nakshatra line in the app to explore the qualities of the mansion the moon is currently moving through.</p>
+<h4 class="accordion-subhead">The 15 Nityas</h4>
+<p data-i18n="learnP53">The Nityas are the individual expressions of Lalitā Mahātripurasundarī — the total Goddess, the supreme manifest intelligence. Together they form a living microcosm of the singular becoming many: one consciousness expressing itself through fifteen distinct faces of time — similarly, a single point of light can express in the rainbow of color, the Nityas express this concept via time. They are intimately connected to the Sri Chakra, the geometric mandala that maps the entire structure of manifest reality (micro-macro) and each Nitya presides over one of its dimensions.</p>
+<p data-i18n="learnP54">Their names encode the Sanskrit vowels — the seed-sounds from which all of creation is said to arise. Working with the Nityas is considered accessible to all sincere practitioners. While their secret bija mantras require initiation from a guru, anyone may connect with a Nitya's energy through meditation on her description, through devotion, and through conscious intention aligned with the lunar phase.</p>
+<h4 class="accordion-subhead">Lalitā — Mahānityā — &ldquo;The Great Eternal&rdquo;</h4>
+<p class="sanskrit" data-i18n="learnP55">Vowel: ah | Sanskrit: अः</p>
+<p data-i18n="learnP56">Lalitā sits beyond the cycle. She has no tithi, she is not one of the fifteen phases but the totality from which all fifteen arise and to which they return. She is the supreme form of the Goddess, the singular from which the many emerge. She is ever-present, neither waxing nor waning, the ground beneath all movement. She does not appear in the daily Nitya display because she transcends the lunar count — yet she is never absent.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="accordion-group-header" data-i18n="learnGroupScience">The Science</h3>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-7-the-science-of-why-the-prana-calendar-header" aria-expanded="false" aria-controls="learn-7-the-science-of-why-the-prana-calendar-panel">
+            <span class="accordion-title" data-i18n="learnScienceWhyTitle">The Science of Why the Prana Calendar</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-7-the-science-of-why-the-prana-calendar-panel" role="region" aria-labelledby="learn-7-the-science-of-why-the-prana-calendar-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP57">For the vast majority of human history — until roughly 150 years ago when electricity arrived — darkness fell and humans went to sleep. The body's chemistry was governed entirely by sunlight and moonlight, rising and setting in rhythm with the natural world. We have disrupted that rhythm at an exponential rate. Artificial light, screens, late nights — and we wonder why mood disorders, sleep problems, digestive issues and anxiety have become epidemic.</p>
+<p data-i18n="learnP58">What neuroscience has confirmed — and what Sri Shyamji taught, and what Tantra has known for thousands of years — is this:</p>
+<p data-i18n="learnP59">The pineal gland is the only light-sensitive gland in the human body. Sitting at the center of the brain, it reads light and darkness through the eyes. Darkness is its signal — when the lights go down, the pineal begins producing melatonin. Neuroscience has found that the brain does its deepest rejuvenation work in the hours between approximately 8pm and midnight. Most people miss this window entirely.</p>
+<p data-i18n="learnP60">Here is what most people don't know: melatonin is made from serotonin. And serotonin is not the neurochemical of excitement or happiness — it is the neurochemical of stability. Stability of mood. Stability of the eating cycle. Stability of sleep. When serotonin is functioning well, life feels manageable. When it is chronically disrupted, the entire system dysregulates — and this dysregulation underlies a vast range of modern suffering.</p>
+<p data-i18n="learnP61">Where is most of the body's serotonin produced? Not in the brain. Approximately 90% is produced in the gut. Researchers studying the gut-brain axis have found that gut health and circadian timing are deeply intertwined — the gut has its own biological clock. Morning elimination, which Sri Shyamji consistently taught as essential, is the gut's natural response to its own serotonin rhythm. Science is catching up to what the tradition has always known.</p>
+<p data-i18n="learnP62">As melatonin peaks and then drops in the pre-dawn hours, serotonin becomes increasingly available for the day ahead. Rising before sunrise catches this window — the moment of natural chemical priming that the ancient traditions structured their entire morning practice around. Morning light then signals the pineal to complete the reset, making serotonin available for mood, clarity and stability throughout the day.</p>
+<p data-i18n="learnP63">The evening habits set up the morning. Darkness after sunset, early sleep, no screens — these are not restrictions. They are the conditions under which the body does exactly what it was designed to do. The sun rises — and you are designed to rise with it. The macrocosm and the microcosm move together. Your body is not separate from the natural world — it IS the natural world, in miniature.</p>
+<p data-i18n="learnP64">These adjustments can be genuinely difficult in modern life. We are not suggesting perfection. Even rising 15 minutes earlier each month is a real step. The Three Body Purification retreat exists precisely to help — though it too requires an investment of time and resources. It is also worth considering the financial cost of chronic imbalance — therapies, medications, and treatments accumulate over a lifetime. The daily practices here cost nothing but commitment.</p>
+<p data-i18n="learnP65">We are always choosing our difficulty. The work of aligning with natural rhythms is hard. The consequences of not doing so are also hard — and they accumulate quietly over time. Choose the work that moves you toward health rather than the work of managing chronic imbalance.</p>
+<p data-i18n="learnP66">The Prana Calendar is a simple daily practice of returning — one morning at a time — to the rhythm you were designed for.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-12-patterns-in-nature-the-microcosm-and-the-macrocosm-header" aria-expanded="false" aria-controls="learn-12-patterns-in-nature-the-microcosm-and-the-macrocosm-panel">
+            <span class="accordion-title" data-i18n="learnPatternsNatureTitle">Patterns in Nature — The Microcosm and the Macrocosm</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-12-patterns-in-nature-the-microcosm-and-the-macrocosm-panel" role="region" aria-labelledby="learn-12-patterns-in-nature-the-microcosm-and-the-macrocosm-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP67">Look at the branching of your lungs and the branching of a tree. The network of your veins and the pattern of rivers seen from above. Your fingerprint and the rings of a tree trunk. The structure of a nebula and the structure of the human eye. Neurons in the brain and the large-scale cosmic web of galaxies — researchers have documented the striking similarity between these two networks, separated by unimaginable scale yet following the same structural logic.</p>
+<p data-i18n="learnP68">These are not coincidences. They are the same intelligence expressing itself at different scales.</p>
+<p data-i18n="learnP69">This is the ancient teaching of microcosm and macrocosm: what exists in the vast universe exists in miniature within the human body. You are not separate from the natural world — you are the natural world, compressed into human form. The same elements, the same proportions, the same rhythms.</p>
+<p data-i18n="learnP70">This is why planetary cycles are not merely poetic — they are literal. The moon moves the oceans. You are approximately 73% water. The same force that pulls the tides is pulling at you. The sun rises — and your body was designed to rise with it. When we ignore these rhythms, we pay the consequences with our health and with our peace of mind.</p>
+<p data-i18n="learnP71">The tradition of Svar Yoga understood this completely. The nasal cycle, the chakra energy cycle, the lunar rhythms of the Prana Calendar — these are not inventions. They are observations of the patterns already present in every human body, moving in concert with the cosmos.</p>
+<p data-i18n="learnP72">This system is rooted in a fundamentally different paradigm of life and where it comes from. Pure consciousness — intelligence itself — descends into matter and animates it. Matter is not separate from consciousness; it is made entirely of it, at a denser frequency.</p>
+<p data-i18n="learnP73">In this view, the chakras are not metaphors. They are the fields through which ascending consciousness must pass. People get caught in repetitive patterns — accumulated over lifetimes — that keep awareness circling in the lower fields. The divine intelligence within has no limitation. It is the karmic accumulation that obscures it.</p>
+<p data-i18n="learnP74">A seed contains everything it needs to become a tree. But it needs the right soil, water, and light. The intelligence within you is the same — it knows exactly what to do. The practices here are simply the conditions: the soil of proper rhythm, the water of sacred sound, the light of alignment with natural law. Given the right environment, consciousness does what it has always wanted to do — it opens, ascends, and recognizes itself.</p>
+<p data-i18n="learnP75">We are not fixing you. We are helping you create the conditions for what is already within you to thrive.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-13-quantum-science-meets-ancient-wisdom-header" aria-expanded="false" aria-controls="learn-13-quantum-science-meets-ancient-wisdom-panel">
+            <span class="accordion-title" data-i18n="learnQuantumScienceTitle">Quantum Science Meets Ancient Wisdom</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-13-quantum-science-meets-ancient-wisdom-panel" role="region" aria-labelledby="learn-13-quantum-science-meets-ancient-wisdom-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP76">It is worth noting that many of the greatest quantum physicists were not strangers to the Vedic tradition. Schrödinger read the Upanishads daily. Heisenberg studied Sanskrit. Oppenheimer quoted the Bhagavad Gita at the moment of the first atomic test. The convergence was not accidental.</p>
+<p data-i18n="learnP77">Erwin Schrödinger wrote: "The total number of minds in the universe is one." He said that the unity he found in wave mechanics was entirely consistent with Vedanta. He wasn't being poetic. He meant it technically.</p>
+<p data-i18n="learnP78">David Bohm spent nearly 25 years in ongoing dialogue with the Indian philosopher Krishnamurti — 144 recorded conversations. What Bohm proposed was two orders of reality.</p>
+<p data-i18n="learnP79">The Explicate Order is the world we see and touch. It is the manifest world — the one specific reality that emerged out of infinite possibility.</p>
+<p data-i18n="learnP80">The Implicate Order is the vast underlying field from which it emerged. It contains all potentialities — everything that could exist, enfolded together in an unmanifest state. Think of it as the ocean, and the Explicate Order as a single wave that rose from it.</p>
+<p data-i18n="learnP81">Consciousness, Bohm said, belongs more to that deeper field than matter does. Which is simply Vedanta, in the language of physics.</p>
+<p data-i18n="learnP82">At the quantum level, matter disappears. Time, space, and location cease to exist as fixed realities. Nonlocality — the connection between particles regardless of distance — is now considered a fundamental fact of the universe.</p>
+<p data-i18n="learnP83">Modern materialist science sees consciousness as something that emerges accidentally from matter — a bottom-up process with no ultimate aim. The Vedic understanding is the opposite: pure consciousness descends into matter and animates it. Matter is not separate from consciousness — it is made entirely of it. This is not a belief. It is what the deepest physics keeps finding, expressed in the language of equations rather than Sanskrit.</p>
+<p data-i18n="learnP84">At CERN — the world's most advanced particle physics laboratory in Geneva — a large bronze statue of Shiva Nataraja stands at the entrance. The cosmic dancer. The destroyer and creator of worlds. The scientists who built the most powerful machine in human history chose to place him there. That is not a coincidence.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="accordion-group-header" data-i18n="learnGroupDeepen">Deepen Your Practice</h3>
+
+        <div class="accordion-item">
+          <button type="button" class="accordion-header" id="learn-11-the-three-body-purification-header" aria-expanded="false" aria-controls="learn-11-the-three-body-purification-panel">
+            <span class="accordion-title" data-i18n="learnThreeBodyTitle">The Three Body Purification</span>
+            <span class="accordion-icon" aria-hidden="true">&#9662;</span>
+          </button>
+          <div class="accordion-panel" id="learn-11-the-three-body-purification-panel" role="region" aria-labelledby="learn-11-the-three-body-purification-header">
+            <div class="accordion-panel-inner">
+<p data-i18n="learnP85">For the deepest and most lasting results, the Chakra Institute's Three Body Purification Retreat is our primary recommendation. This immersive program works simultaneously on all three bodies:</p>
+<ul class="plain-list">
+<li>The physical body — through diet, movement, and cleansing practices that sharpen the senses and strengthen the immune system.</li>
+<li>The causal body (thoughts) — through sacred sound and chanting that produces soorya akasha, pushing dense toxic energy out of the mind and creating clarity.</li>
+<li>The subtle body (feelings) — through practices that surface and release buried emotions, opening the microchakras and restoring the natural flow of life energy.</li>
+</ul>
+<p data-i18n="learnP86">Sri Shyamji's sounds work deeply on all three simultaneously. Many participants report that the breathing rate drops dramatically, meditation deepens naturally, and life begins to feel more joyful and free.</p>
+<p data-i18n-html="learnP87">Ideally the purification retreat is undertaken seasonally — a minimum of twice a year — for cumulative and lasting benefit. To learn more or register visit <a href="https://www.chakrainstitute.com" target="_blank" rel="noopener">www.chakrainstitute.com</a></p>
+            </div>
+          </div>
+        </div>
+
+        </section>
+      </div>
+    </main>
+
+    <nav class="bottom-nav">
+      <button type="button" class="bottom-nav-btn active" data-tab="today">
+        <span class="bottom-nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+        </span>
+        <span class="bottom-nav-label" data-i18n="navToday">Today</span>
+      </button>
+      <button type="button" class="bottom-nav-btn" data-tab="mantra">
+        <span class="bottom-nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a4 4 0 0 0-4 4v3a4 4 0 0 0 8 0V7a4 4 0 0 0-4-4z"></path><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path></svg>
+        </span>
+        <span class="bottom-nav-label" data-i18n="navMantra">Mantra</span>
+      </button>
+      <button type="button" class="bottom-nav-btn" data-tab="practice">
+        <span class="bottom-nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M2 12h4M18 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </span>
+        <span class="bottom-nav-label" data-i18n="navPractice">Practice</span>
+      </button>
+      <button type="button" class="bottom-nav-btn" data-tab="learn">
+        <span class="bottom-nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        </span>
+        <span class="bottom-nav-label" data-i18n="navLearn">Learn</span>
+      </button>
+    </nav>
+
+    <div id="chillaSetupOverlay" class="modal-overlay" hidden>
+      <div class="modal-card">
+        <label for="chillaNameInput" data-i18n="chillaNameInputLabel">Chilla name (40-day mantra commitment)</label>
+        <input type="text" id="chillaNameInput" class="chilla-name-input">
+        <button type="button" id="chillaBeginBtn" class="primary-button" data-i18n="beginBtn">Begin</button>
+      </div>
+    </div>
+
+    <div id="dayPopupOverlay" class="modal-overlay" hidden>
+      <div class="modal-card day-popup-card">
+        <h3 id="dayPopupDate" class="day-popup-date"></h3>
+
+        <div class="day-popup-section">
+          <p class="tracking-label" data-i18n="trackingQuestion">Was your nostril correct at sunrise?</p>
+          <div class="tracking-buttons">
+            <button type="button" id="popupCheckBtn" class="track-btn toggle-btn track-check" aria-label="Correct">✓</button>
+            <button type="button" id="popupXBtn" class="track-btn toggle-btn track-x" aria-label="Incorrect">✗</button>
+          </div>
+          <div id="popupCorrectedFollowup" class="tracking-followup" hidden>
+            <p class="tracking-label" data-i18n="correctedQuestion">Were you able to correct it easily?</p>
+            <div class="tracking-buttons">
+              <button type="button" id="popupCorrectedYesBtn" class="small-button toggle-btn track-corrected-yes" data-i18n="yesBtn">Yes</button>
+              <button type="button" id="popupCorrectedNoBtn" class="small-button toggle-btn track-corrected-no" data-i18n="noBtn">No</button>
+            </div>
+          </div>
+          <button type="button" id="popupClearBtn" class="link-button popup-clear-btn" data-i18n="clearBtn">Clear</button>
+        </div>
+
+        <div id="popupChillaSection" class="day-popup-section" hidden>
+          <label class="remember-row chilla-checkbox-row">
+            <input type="checkbox" id="popupChillaCheckbox">
+            <span data-i18n="popupChillaCheckboxLabel">I did my Chilla (40-day mantra commitment)</span>
+          </label>
+        </div>
+
+        <button type="button" id="dayPopupCloseBtn" class="small-button day-popup-close" data-i18n="closeBtn">Close</button>
+      </div>
+    </div>
+
+    <div id="chakraQuizOverlay" class="quiz-overlay" hidden>
+
+      <div id="quizDisclaimerView" class="quiz-view">
+        <h2 data-i18n="chakraQuizHeading">Chakra Quiz</h2>
+        <p id="quizDisclaimerText" class="quiz-disclaimer-text"></p>
+        <label class="remember-row quiz-disclaimer-checkbox-row">
+          <input type="checkbox" id="quizDisclaimerCheckbox">
+          <span data-i18n="quizAttestation">I attest that I am 18 years of age or older, I have read and agree to the above terms, and I
+          understand these offerings are for educational and spiritual purposes only and I release the
+          Chakra Institute from any liability for outcomes.</span>
+        </label>
+        <button type="button" id="quizBeginBtn" class="primary-button" disabled data-i18n="beginQuizBtn">Begin Quiz</button>
+      </div>
+
+      <div id="quizPageView" class="quiz-view" hidden>
+        <div class="quiz-page-header">
+          <p id="quizPageProgress" class="quiz-page-progress"></p>
+          <h2 id="quizPageLabel" class="quiz-page-label"></h2>
+        </div>
+        <div id="quizQuestionsContainer" class="quiz-questions"></div>
+        <p id="quizValidationError" class="quiz-validation-error" hidden data-i18n="quizValidationError">Please answer all questions before continuing.</p>
+        <div class="quiz-page-nav">
+          <button type="button" id="quizBackBtn" class="link-button" hidden data-i18n="backBtn">‹ Back</button>
+          <button type="button" id="quizNextBtn" class="primary-button" data-i18n="nextBtn">Next</button>
+        </div>
+      </div>
+
+      <div id="quizResultsView" class="quiz-view" hidden>
+
+        <section id="emailResultsRow" class="email-results-card">
+          <h2 data-i18n="emailResultsTitle">Email Me My Results</h2>
+          <p class="email-results-subtext" data-i18n="emailResultsSubtext">Optional — get your chakra recommendation and mantra sent straight to your inbox.</p>
+          <div class="input-with-button">
+            <input type="email" id="emailResultsInput" placeholder="you@example.com">
+            <button type="button" id="emailResultsSendBtn" class="primary-button" data-i18n="sendBtn">Send</button>
+          </div>
+          <p id="emailResultsStatus" class="email-results-status" hidden></p>
+        </section>
+
+        <p class="quiz-results-saved-note" data-i18n="quizResultsSavedNote">Your results will be available in the Practice tab unless deleted.</p>
+
+        <h2 data-i18n="yourResultsTitle">Your Results</h2>
+
+        <div id="quizResultRecommendations" class="quiz-result-recommendations"></div>
+        <a id="quizResultStoreBtn" class="primary-button quiz-store-btn" href="#" target="_blank" rel="noopener" hidden data-i18n="findOnWebsiteBtn">Find these on our website</a>
+
+        <div id="quizResultTieNote" class="quiz-result-tie-note" hidden>
+          <p id="quizResultTieNoteText"></p>
+        </div>
+
+        <div id="quizResultReadyBlock" class="quiz-result-ready" hidden>
+          <p id="quizResultReadyText"></p>
+        </div>
+
+        <div id="quizResultNoneBlock" class="quiz-result-none" hidden>
+          <p data-i18n="quizNoRecommendation">We couldn't find a clear recommendation from your answers this time. Feel free to retake the quiz.</p>
+        </div>
+
+        <p id="quizConsultationCta" class="quiz-consultation-cta"></p>
+
+        <div class="quiz-results-actions-row">
+          <button type="button" id="quizReviewAnswersBtn" class="link-button quiz-review-toggle-btn" data-i18n="reviewAnswersBtn">Review my answers</button>
+          <button type="button" id="quizResultsRetakeBtn" class="link-button" data-i18n="retakeQuizBtn">Retake quiz</button>
+          <button type="button" id="shareQuizBtn" class="link-button share-btn" data-i18n="shareBtn">Share</button>
+        </div>
+        <span id="shareQuizCopiedNote" class="share-copied-note" hidden></span>
+        <div id="quizAnswersReview" class="quiz-answers-review" hidden></div>
+
+        <div id="quizNewsletterSection" class="quiz-newsletter-section" hidden>
+          <h3 data-i18n="newsletterTitle">Join our Newsletter</h3>
+          <div class="ctct-inline-form" data-form-id="194423f7-3d40-4649-9a8c-6fe5954cfb51"></div>
+        </div>
+
+        <p class="quiz-footer-disclaimer" id="quizFooterDisclaimer"></p>
+      </div>
+
+    </div>
+
+    <div id="confirmDialogOverlay" class="modal-overlay" hidden>
+      <div class="modal-card confirm-dialog-card">
+        <p id="confirmDialogMessage" class="confirm-dialog-message"></p>
+        <div class="confirm-dialog-actions">
+          <button type="button" id="confirmDialogCancelBtn" class="link-button" data-i18n="cancelBtn">Cancel</button>
+          <button type="button" id="confirmDialogConfirmBtn" class="small-button confirm-dialog-confirm-btn"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Once-per-day splash — content driven entirely by events.json (see
+         that file's comments); closes on a tap anywhere on it, or the X. -->
+    <div id="splashOverlay" class="modal-overlay splash-overlay" hidden>
+      <div class="modal-card splash-card">
+        <button type="button" id="splashCloseBtn" class="splash-close-btn" aria-label="Close">&times;</button>
+        <div class="splash-logo-wrap">
+          <img src="images/chakra-institute-logo.jpg" alt="The Chakra Institute" class="splash-logo" id="splashLogoImg">
+        </div>
+        <div id="splashEventsList" class="splash-events-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="js/emailjs-config.js"></script>
+  <script src="js/julian.js"></script>
+  <script src="js/moonphases.js"></script>
+  <script src="js/panchanga.js"></script>
+  <script src="js/nitya-data.js"></script>
+  <script src="js/nakshatra-data.js"></script>
+  <script src="js/sunrise.js"></script>
+  <script src="js/timezone.js"></script>
+  <script src="js/geocode.js"></script>
+  <script src="js/nostril-schedule.js"></script>
+  <script src="js/day-lord.js"></script>
+  <script src="js/chakra.js"></script>
+  <script src="js/chakra-quiz-data.js"></script>
+  <script src="js/mantra-catalog.js"></script>
+  <script src="js/translations.js"></script>
+  <script src="js/share-card.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
