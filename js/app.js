@@ -315,7 +315,7 @@
         const file = new File([blob], filename || 'prana-calendar-share.png', { type: 'image/png' });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           navigator
-            .share({ files: [file], text, title: 'Prana Calendar' })
+            .share({ files: [file], text, title: 'InnerTuning — Prana Calendar' })
             .catch((err) => {
               if (err && err.name === 'AbortError') return;
               downloadAndCopyFallback(blob);

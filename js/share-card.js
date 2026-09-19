@@ -140,10 +140,11 @@
   }
 
   // Header: the Chakra Institute logo, prominently sized, on its own —
-  // with the "Prana Calendar" wordmark on its own line underneath (not
-  // beside the logo, so it doesn't compete with it or imply the logo is a
-  // small icon). Falls back to the old small drawn mark + inline wordmark
-  // if the logo image hasn't been added to images/ yet.
+  // with the "InnerTuning — Prana Calendar" wordmark on its own line
+  // underneath (not beside the logo, so it doesn't compete with it or
+  // imply the logo is a small icon). Falls back to the old small drawn
+  // mark + inline wordmark if the logo image hasn't been added to
+  // images/ yet.
   function drawHeader(ctx, innerX, innerW, logoImg) {
     var y = PAD + 40;
 
@@ -160,7 +161,7 @@
       ctx.font = font(700, 32);
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
-      ctx.fillText('Prana Calendar', innerX, y);
+      ctx.fillText('InnerTuning — Prana Calendar', innerX, y);
       return y + 40;
     }
 
@@ -172,7 +173,7 @@
     ctx.font = font(700, 32);
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText('Prana Calendar', innerX + 70, y);
+    ctx.fillText('InnerTuning — Prana Calendar', innerX + 70, y);
     return y + 40;
   }
 
