@@ -193,6 +193,34 @@ body {
   padding: 0 1.25rem calc(5.5rem + env(safe-area-inset-bottom, 0px));
 }
 
+/* Small, subtle, centered legal-links footer — the last thing on every
+   tab, sitting above the fixed bottom nav (see .tab-content's own bottom
+   padding, which already clears the nav for whatever precedes this). */
+.app-footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.app-footer a {
+  color: var(--muted);
+  text-decoration: underline;
+  text-decoration-color: rgba(107, 101, 88, 0.4);
+  text-underline-offset: 2px;
+}
+
+.app-footer a:hover,
+.app-footer a:focus-visible {
+  color: var(--accent);
+}
+
+.app-footer-sep {
+  margin: 0 0.5em;
+}
+
 .bottom-nav {
   position: fixed;
   left: 0;
