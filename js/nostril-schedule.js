@@ -24,25 +24,41 @@
  *     loses a day (2-day short). Again, A and E are never touched.
  *
  * Which of B/C/D absorbs the extra/missing day, and which nostril the
- * resulting short block carries, is governed by the placement rules
- * below (verified against the user's 2021-2023 teacher data plus the
- * additional 14/16-day rules supplied afterward). See
- * pcBuildCycleGroups() for the implementation and inline reasoning.
+ * resulting remainder block carries, is governed by the REMAINDER
+ * NOSTRIL RULE + POSITION RULE below (no year-level carry-state
+ * involved — each cycle is resolved entirely on its own):
  *
- * YEAR-LEVEL STATE: the nostril of a 2-day short depends on what most
- * recently happened *before* it. Finalized rule ("Option A", chosen
- * after simulating three candidates against real 2026/2017 data): the
- * first TWO consecutive shorts after a 4-day block match that block's
- * nostril; the third consecutive short (and every one after it, still
- * with no new 4-block in between) alternates starting from there. A
- * new 4-block always resets the streak back to zero. That means cycles
- * can't be resolved independently: pcBuildYearSchedule() walks every
- * cycle in a calendar year in chronological order, threading that small
- * piece of state (lastFourNostril / lastShortNostril / shortsSinceFour)
- * from one cycle to the next, exactly as specified ("carry state
- * forward between cycles"). The result is cached per (year, lat, lon,
- * timezone) so it's only computed once and then reused for every date
- * lookup in that year — see PC_YEAR_SCHEDULE_CACHE.
+ *   REMAINDER NOSTRIL RULE (fixed by type, never by history):
+ *     - 4-day block (adhika tithi)  -> always the MINORITY nostril,
+ *       i.e. the opposite of the anchor nostril that Groups A and E
+ *       carry.
+ *     - 2-day short (kshaya tithi)  -> always the MAJORITY nostril,
+ *       i.e. the same as the anchor nostril that Groups A and E carry.
+ *
+ *   POSITION RULE (tithi-proximity based):
+ *     - Place the remainder as close to the adhika/kshaya tithi as
+ *       possible.
+ *     - It must end up with the correct nostril per the rule above.
+ *     - Never placed in Group A or Group E.
+ *     - If the correct-nostril candidate is equidistant between B and
+ *       D, prefer D first, then B.
+ *     - If B and D are both the wrong nostril for this remainder,
+ *       place it in Group C instead.
+ *
+ * See pcPlaceRemainderBlock() for the shared implementation of the
+ * position+nostril rule (used for both adhika and kshaya cycles) and
+ * pcBuildCycleGroups() for how it's applied. Because every cycle's
+ * remainder nostril is now fully determined by that cycle's own tithi
+ * sequence and anchor nostril, cycles no longer need to be resolved in
+ * order or thread any state between them (previous versions of this
+ * file carried lastFourNostril / lastShortNostril / shortsSinceFour
+ * across cycles; that carry-state logic has been removed entirely).
+ * pcBuildYearSchedule() still walks the year's cycles in chronological
+ * order for convenience (building the day-map and feeding the annual
+ * balancing pass), but nothing about the per-cycle nostril computation
+ * depends on that order any more. The result is cached per (year, lat,
+ * lon, timezone) so it's only computed once and then reused for every
+ * date lookup in that year — see PC_YEAR_SCHEDULE_CACHE.
  */
 
 const PC_OPPOSITE = { L: 'R', R: 'L' };
@@ -200,72 +216,54 @@ function pcNominalGroupForTithi(tithi) {
 }
 
 /**
- * Decide which of B/C/D grows to 4 days to hold the 4-day (adhika) block,
- * driven directly by the ADHIKA TITHI DAY's absolute position in the
- * cycle — the actual calendar day on which that tithi is active at BOTH
- * the previous sunrise and the current sunrise (i.e. the SECOND of the
- * two consecutive days sharing the repeated tithi number), not the
- * tithi's nominal 1-15 value. Rules, in order:
+ * Shared placement rule for a cycle's remainder block (the 4-day adhika
+ * block or the 2-day kshaya short), implementing the REMAINDER NOSTRIL
+ * RULE + POSITION RULE described in the module doc comment:
  *
- *   1. The 4-day block must CONTAIN the adhika tithi day, unless that
- *      day itself falls within the fixed Group A or Group E (which are
- *      never adjusted).
- *   2. Within the block, prefer the adhika day to land at position 4
- *      (the last day of the block), then position 3, then 2, then
- *      position 1 only if no other placement is possible.
- *   3. The block can never extend into Group A or Group E.
- *   4. If the adhika day falls in Group A, shift the entire 4-day block
- *      to start at the beginning of Group B.
- *   5. If the adhika day falls in Group E, shift the entire 4-day block
- *      to end at the last day of Group D.
+ *   - `requiredNostril` is fixed by the caller from the remainder's
+ *     TYPE alone (minority/opposite-of-anchor for a 4-day block,
+ *     majority/anchor for a 2-day short) — never from any carried-over
+ *     state.
+ *   - Placement starts from whichever of B/D is nominally closest to
+ *     the anomalous tithi (tithi 1-6 -> B, tithi 10-15 -> D), used only
+ *     if it already carries the required nostril (B and D always carry
+ *     the opposite-of-anchor nostril structurally; C always carries the
+ *     anchor nostril structurally — see nostrilByGroup in
+ *     pcBuildCycleGroups).
+ *   - A tithi that falls in nominal Group C's range (7-9) is equidistant
+ *     enough between B and D that it's resolved by exact tithi
+ *     distance, preferring D on an exact tie.
+ *   - Group A and Group E are never candidates.
+ *   - Whenever the nominally-closest group (B or D) is the wrong
+ *     nostril for this remainder, it falls back to Group C instead —
+ *     which is guaranteed correct for that case, since B/D and C always
+ *     carry opposite nostrils from each other.
  *
- * @param {number} totalDays  16 for a clean adhika cycle.
- * @param {number} adhikaDayIndex  absolute 0-based day-index (within the
- *   cycle) of the SECOND of the two consecutive days sharing the
- *   repeated tithi — i.e. anomaly.dayIndex + 1.
- * @returns {{ target: 'B'|'C'|'D', position: number|null, shifted: string|null }}
+ * @param {number} tithi  the anomaly's tithi (1-15), used to judge
+ *   proximity — the repeated tithi for an adhika block, the skipped
+ *   tithi for a kshaya short.
+ * @param {'L'|'R'} requiredNostril
+ * @param {{A:string,B:string,C:string,D:string,E:string}} nostrilByGroup
+ *   this cycle's fixed per-group nostril identity.
+ * @returns {'B'|'C'|'D'}
  */
-function pcPlaceAdhikaBlock(totalDays, adhikaDayIndex) {
-  const aEnd = 3; // Group A is always days [0, 3)
-  const eStart = totalDays - 3; // Group E is always the last 3 days
-
-  if (adhikaDayIndex < aEnd) {
-    // Falls in Group A -> shift the whole block to the start of Group B.
-    return { target: 'B', position: null, shifted: 'A' };
+function pcPlaceRemainderBlock(tithi, requiredNostril, nostrilByGroup) {
+  const nominal = pcNominalGroupForTithi(tithi);
+  if (nominal === 'C') {
+    if (nostrilByGroup.C === requiredNostril) return 'C';
+    // Neither B nor D is "more correct" by nostril (both carry the
+    // opposite nostril) — break the tie by which is physically closer
+    // to the anomalous tithi.
+    const distToB = tithi - 6; // tithi 7,8,9 -> 1,2,3
+    const distToD = 10 - tithi; // tithi 7,8,9 -> 3,2,1
+    return distToB < distToD ? 'B' : 'D'; // equidistant -> D
   }
-  if (adhikaDayIndex >= eStart) {
-    // Falls in Group E -> shift the whole block to end at Group D's end.
-    return { target: 'D', position: null, shifted: 'E' };
-  }
-
-  // Otherwise: try each of the three possible placements (grow B, grow C,
-  // or grow D — the only three discrete positions a 4-day block can take
-  // once A and E are fixed) and, among whichever candidate(s) actually
-  // contain the adhika day, prefer the one that puts it at the highest
-  // position within the block (4 preferred, then 3, then 2, then 1).
-  let best = null;
-  for (const target of ['B', 'C', 'D']) {
-    const middle = { B: 3, C: 3, D: 3 };
-    middle[target] = 4;
-    let cursor = aEnd;
-    let start = cursor, end = cursor;
-    for (const g of ['B', 'C', 'D']) {
-      start = cursor;
-      end = cursor + middle[g];
-      cursor = end;
-      if (g === target) break;
-    }
-    if (adhikaDayIndex >= start && adhikaDayIndex < end) {
-      const position = adhikaDayIndex - start + 1; // 1-indexed within the block
-      if (!best || position > best.position) {
-        best = { target, position, shifted: null };
-      }
-    }
-  }
-  // Every index in the middle span [aEnd, eStart) is covered by at least
-  // one of the three candidate placements, so `best` is always found;
-  // the fallback below is purely defensive.
-  return best || { target: 'D', position: null, shifted: null };
+  // A, B, D, E all map to a single specific preferred group (B or D
+  // respectively for A/B and D/E) — this is also how a tithi that falls
+  // in the fixed Group A or Group E gets shifted into the nearest legal
+  // group (B for A, D for E).
+  const preferred = nominal === 'A' || nominal === 'B' ? 'B' : 'D';
+  return nostrilByGroup[preferred] === requiredNostril ? preferred : 'C';
 }
 
 // -------------------------------------------------------------------
@@ -274,20 +272,17 @@ function pcPlaceAdhikaBlock(totalDays, adhikaDayIndex) {
 
 /**
  * Build the {A,B,C,D,E} day-ranges (as [startDayIndex, endDayIndex))
- * and per-group nostril for one lunar cycle, and update the running
- * cross-cycle nostril-continuity state for 2-day shorts.
+ * and per-group nostril for one lunar cycle. Fully self-contained: no
+ * state is threaded in from — or carried out to — any other cycle. See
+ * the module doc comment for the REMAINDER NOSTRIL RULE + POSITION RULE
+ * this implements.
  *
  * @param {number} totalDays  14, 15, or 16 (occasionally something else
  *   from a fluke long/short cycle — see the "irregular" fallback).
  * @param {number[]} tithiSeq  from pcBuildTithiSeq(), length totalDays.
  * @param {'L'|'R'} anchorNostril
- * @param {object} state  { lastFourNostril, lastShortNostril, shortsSinceFour }
- *   — mutated in place to carry forward into the next cycle. Pass
- *   { lastFourNostril: null, lastShortNostril: null, shortsSinceFour: 0 }
- *   for the very first cycle of a year (see pcBuildYearSchedule).
  */
-function pcBuildCycleGroups(totalDays, tithiSeq, anchorNostril, state) {
-  let isFirstShortAfterFour = null; // only meaningful for a kshaya (short) cycle — see below
+function pcBuildCycleGroups(totalDays, tithiSeq, anchorNostril) {
   const oppNostril = PC_OPPOSITE[anchorNostril];
   // A and E are always exactly the first/last 3 days of the cycle —
   // "Groups A and E always exactly 3 days, never adjusted."
@@ -303,15 +298,11 @@ function pcBuildCycleGroups(totalDays, tithiSeq, anchorNostril, state) {
     groups.C = [6, 9];
     groups.D = [9, 12];
   } else if (totalDays === 16 && anomaly.type === 'adhika') {
-    // 4-DAY BLOCK PLACEMENT — driven directly by the absolute day-index
-    // of the adhika tithi day (the second of the two consecutive days
-    // sharing the repeated tithi at sunrise), not by the tithi's nominal
-    // 1-15 value. See pcPlaceAdhikaBlock() for the full rule and
-    // rationale (must contain that day; prefer position 4, then 3, then
-    // 2, then 1; shift to the start of B / end of D if that day falls in
-    // the fixed Group A / Group E).
-    const adhikaDayIndex = anomaly.dayIndex + 1;
-    const { target } = pcPlaceAdhikaBlock(totalDays, adhikaDayIndex);
+    // 4-DAY BLOCK: always the MINORITY nostril, i.e. the opposite of
+    // this cycle's anchor nostril. See pcPlaceRemainderBlock() for the
+    // shared position+nostril placement rule.
+    const requiredNostril = oppNostril;
+    const target = pcPlaceRemainderBlock(anomaly.tithi, requiredNostril, nostrilByGroup);
     const middle = { B: 3, C: 3, D: 3 };
     middle[target] = 4;
     let cursor = 3;
@@ -319,66 +310,17 @@ function pcBuildCycleGroups(totalDays, tithiSeq, anchorNostril, state) {
     groups.C = [cursor, cursor + middle.C]; cursor += middle.C;
     groups.D = [cursor, cursor + middle.D]; cursor += middle.D;
   } else if (totalDays === 14 && anomaly.type === 'kshaya') {
-    // 2-DAY SHORT PLACEMENT (position rule) + NOSTRIL RULE.
-    //
-    // Required nostril for this short, carried from state — this is the
-    // finalized "Option A" rule: the first TWO consecutive shorts after
-    // a 4-day block match that block's nostril; the third consecutive
-    // short (and every one after it, still with no new 4-block in
-    // between) alternates, starting from there. A new 4-block always
-    // resets the count back to zero. With no prior context yet this
-    // year (no 4-block or short has occurred), fall back to this
-    // cycle's own anchor nostril — a reasonable, documented default;
-    // the spec doesn't say what happens before any 4/short has occurred.
-    const requiredNostril =
-      state.lastShortNostril === null
-        ? state.lastFourNostril !== null
-          ? state.lastFourNostril
-          : anchorNostril
-        : state.shortsSinceFour < 2
-        ? state.lastShortNostril
-        : PC_OPPOSITE[state.lastShortNostril];
-
-    const nominal = pcNominalGroupForTithi(anomaly.tithi);
-    // B and D always carry the opposite nostril; C always carries the
-    // anchor nostril (see nostrilByGroup above) — so "is B/C/D the
-    // correct nostril" collapses to a simple comparison against
-    // whichever nostril that group structurally always has.
-    let shortGroup;
-    if (nominal === 'C') {
-      if (nostrilByGroup.C === requiredNostril) {
-        shortGroup = 'C';
-      } else {
-        // Neither B nor D is "more correct" by nostril (both carry the
-        // opposite nostril) — break the tie by which is physically
-        // closer to the kshaya tithi, per the explicit rule.
-        const distToB = anomaly.tithi - 6; // tithi 7,8,9 -> 1,2,3
-        const distToD = 10 - anomaly.tithi; // tithi 7,8,9 -> 3,2,1
-        shortGroup = distToB < distToD ? 'B' : 'D'; // equidistant -> D
-      }
-    } else {
-      // A, B, D, E all map to a single specific preferred group (B or D
-      // respectively for A/B and D/E), falling back to C otherwise.
-      const preferred = nominal === 'A' || nominal === 'B' ? 'B' : 'D';
-      shortGroup = nostrilByGroup[preferred] === requiredNostril ? preferred : 'C';
-    }
-
+    // 2-DAY SHORT: always the MAJORITY nostril, i.e. the same as this
+    // cycle's anchor nostril. See pcPlaceRemainderBlock() for the
+    // shared position+nostril placement rule.
+    const requiredNostril = anchorNostril;
+    const shortGroup = pcPlaceRemainderBlock(anomaly.tithi, requiredNostril, nostrilByGroup);
     const middle = { B: 3, C: 3, D: 3 };
     middle[shortGroup] = 2;
     let cursor = 3;
     groups.B = [cursor, cursor + middle.B]; cursor += middle.B;
     groups.C = [cursor, cursor + middle.C]; cursor += middle.C;
     groups.D = [cursor, cursor + middle.D]; cursor += middle.D;
-
-    // Captured BEFORE the increment below: true iff this is the very
-    // first short since the last 4-block (or since the start of the
-    // year) — needed by the annual balancing pass (see
-    // pcApplyAnnualBalancingPass), which is only allowed to flip a
-    // short's nostril if it's NOT this one, as first priority.
-    isFirstShortAfterFour = state.shortsSinceFour === 0;
-
-    state.lastShortNostril = nostrilByGroup[shortGroup];
-    state.shortsSinceFour += 1;
   } else {
     // FALLBACK: an irregular cycle (anomaly detection came back
     // ambiguous, or totalDays isn't 14/15/16 at all) — "default to
@@ -393,18 +335,7 @@ function pcBuildCycleGroups(totalDays, tithiSeq, anchorNostril, state) {
     groups.D = [cursor, cursor + dc]; cursor += dc;
   }
 
-  // Track the most recent 4-day block's nostril for the NEXT short to
-  // pick up, and clear any in-progress short streak (a new 4-block
-  // resets the alternation — "next short matches the new 4's nostril").
-  if (totalDays === 16 && anomaly.type === 'adhika') {
-    const adhikaDayIndex = anomaly.dayIndex + 1;
-    const { target } = pcPlaceAdhikaBlock(totalDays, adhikaDayIndex);
-    state.lastFourNostril = nostrilByGroup[target];
-    state.lastShortNostril = null;
-    state.shortsSinceFour = 0;
-  }
-
-  return { groups, nostrilByGroup, anomaly, isFirstShortAfterFour };
+  return { groups, nostrilByGroup, anomaly };
 }
 
 /** Which nostril applies at `dayIndex` days after the cycle's anchor. */
@@ -477,13 +408,23 @@ function pcComputeAnnualScores(cycles) {
  * Mutates `cycle.nostrilByGroup` for each flipped cycle and the day-map
  * entries for that cycle's 2-day span. Returns the adjustment log.
  *
- * Eligibility priority, per spec:
+ * Eligibility priority, per spec (unchanged from before the carry-state
+ * removal — kept exactly as implemented):
  *   1. consecutive shorts that are NOT the 1st short after a 4-block
  *   2. only if still unbalanced: any remaining short, including 1st
  *      shorts after a 4
  * Within a priority tier, the earliest (chronological) eligible short
  * of the needed nostril is chosen — the spec doesn't specify a
  * tie-break, so this is a documented, deterministic default.
+ *
+ * NOTE: tier 1 keys off `cycle.isFirstShortAfterFour`, which was a
+ * byproduct of the now-removed carry-state tracking (it required
+ * knowing how many shorts had occurred since the last 4-day block).
+ * Cycles no longer carry that field, so it reads as `undefined` here,
+ * tier 1's filter never matches, and every call falls straight through
+ * to tier 2 (any remaining eligible short, earliest first) — which is
+ * exactly the historical fallback behavior for this pass, so the logic
+ * below is left untouched.
  */
 function pcApplyAnnualBalancingPass(cycles, days) {
   const log = [];
@@ -542,22 +483,22 @@ function pcApplyAnnualBalancingPass(cycles, days) {
 }
 
 // -------------------------------------------------------------------
-// Year-level schedule: walk every cycle in chronological order,
-// carrying nostril-continuity state forward (per module doc comment).
+// Year-level schedule: walk every cycle in chronological order and
+// build the day-map. Each cycle's own nostril rules are now fully
+// self-contained (see pcBuildCycleGroups) — this pass no longer
+// threads any state between cycles; it walks in order simply because
+// that's a natural way to build the day-map and feed the annual
+// balancing pass afterward.
 // -------------------------------------------------------------------
 
 const PC_YEAR_SCHEDULE_CACHE = new Map();
 
 /**
  * Build (and cache) the full dominant-nostril schedule for every day of
- * `year` at a given location: "At app load, calculate all lunar cycles
- * for the current year sequentially. Carry state forward between
- * cycles." In practice this runs lazily on first use for that
- * (year, location) pair rather than unconditionally at startup — the
- * app doesn't know a location until the user provides one — but the
- * effect is the same: every date lookup within a year is served from
- * one single sequential pass over that year's cycles, not resolved in
- * isolation.
+ * `year` at a given location. Runs lazily on first use for that
+ * (year, location) pair — the app doesn't know a location until the
+ * user provides one — and the result is cached so each (year, lat, lon,
+ * timezone) combination is only computed once.
  *
  * Returns { days: Map<dateMs, nostril>, cycles: [...] } — `cycles` is
  * kept mainly for debugging/testing.
@@ -581,7 +522,6 @@ function pcBuildYearSchedule(year, lat, lon, timezone) {
 
   const days = new Map();
   const cycles = [];
-  const state = { lastFourNostril: null, lastShortNostril: null, shortsSinceFour: 0 };
 
   for (let i = 0; i < anchors.length - 1; i++) {
     const A = anchors[i];
@@ -590,12 +530,7 @@ function pcBuildYearSchedule(year, lat, lon, timezone) {
     if (totalDays <= 0) continue; // guard against any duplicate/degenerate anchor
 
     const tithiSeq = pcBuildTithiSeq(A.ymd, totalDays, lat, lon);
-    const { groups, nostrilByGroup, anomaly, isFirstShortAfterFour } = pcBuildCycleGroups(
-      totalDays,
-      tithiSeq,
-      A.nostril,
-      state
-    );
+    const { groups, nostrilByGroup, anomaly } = pcBuildCycleGroups(totalDays, tithiSeq, A.nostril);
 
     for (let dayIndex = 0; dayIndex < totalDays; dayIndex++) {
       const nostril = pcNostrilForDayIndexInCycle(dayIndex, groups, nostrilByGroup);
@@ -610,7 +545,6 @@ function pcBuildYearSchedule(year, lat, lon, timezone) {
       groups,
       nostrilByGroup,
       anomaly,
-      isFirstShortAfterFour,
     });
   }
 
