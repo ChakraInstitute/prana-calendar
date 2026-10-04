@@ -1371,5 +1371,33 @@
   <script src="js/translations.js"></script>
   <script src="js/share-card.js"></script>
   <script src="js/app.js"></script>
+
+  <!-- Service worker registration — keeps installed (home-screen) copies
+       up to date automatically. See sw.js for the full update strategy.
+       The page re-checks for a new sw.js on launch and whenever the app
+       comes back to the foreground, and reloads once when a new worker
+       takes over so users never keep running stale code. -->
+  <script>
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', function () {
+        // A controller already existing means this is an UPDATE, not the
+        // first install — only then is a one-time reload warranted.
+        var hadController = !!navigator.serviceWorker.controller;
+        var reloaded = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          if (!hadController || reloaded) { hadController = true; return; }
+          reloaded = true;
+          window.location.reload();
+        });
+        navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) {
+          function check() { try { reg.update(); } catch (e) {} }
+          document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') check();
+          });
+          setInterval(check, 60 * 60 * 1000);
+        }).catch(function () {});
+      });
+    }
+  </script>
 </body>
 </html>

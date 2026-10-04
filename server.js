@@ -250,7 +250,7 @@ const server = http.createServer((req, res) => {
   // a stale copy after an admin save (e.g. the splash popup silently
   // staying hidden after "show" was flipped back to true). Force a fresh
   // fetch every time instead.
-  const noStoreHeaders = ext === '.json' ? { 'Cache-Control': 'no-store' } : {};
+  const noStoreHeaders = (ext === '.json' || path.basename(filePath) === 'sw.js') ? { 'Cache-Control': 'no-store' } : {};
 
   // HTML pages are small and get the live-reload script injected, so they
   // stay on the simple "read the whole file" path — nothing ever seeks
