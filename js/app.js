@@ -949,7 +949,7 @@
     });
 
     // Always shown left-to-right as 1-2-3-4-5-6-7 (numeric order), not the
-    // 3-4-5-6-7-1-2 cycle order — that's how the underlying timing works,
+    // 2-3-4-5-6-7-1 cycle order — that's how the underlying timing works,
     // but displaying it that way reads as confusing/out-of-order to users.
     els.chakraSegments.innerHTML = PC_CHAKRAS
       .map((c) => {
