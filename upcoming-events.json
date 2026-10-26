@@ -1,0 +1,57 @@
+{
+  "_help": "Add one entry per event. start = YYYY-MM-DDTHH:MM (24-hour clock) in the event's timezone, which is California unless you add a \"timezone\". For an all-day or multi-day event with no time, use start: YYYY-MM-DD and endDate: YYYY-MM-DD. Past events hide themselves automatically.",
+  "events": [
+    {
+      "title": "3 Class Workshop - Pathways to The Divine with Spiritual Teacher Godelinde",
+      "description": "Three sessions: Nov 8, Nov 22 and Dec 6, 2026, each starting at 11:00 AM.",
+      "start": "2026-11-08T11:00",
+      "timezone": "America/Los_Angeles",
+      "location": "Online Event",
+      "link": "https://www.chakrainstitute.com/upcoming-events-2/3-class-workshop-pathways-to-the-divine-with-spiritual-teacher-godelinde"
+    },
+    {
+      "title": "The Leadership Exchange - Connect and Plan",
+      "start": "2026-11-19T09:00",
+      "end": "2026-11-19T10:15",
+      "timezone": "America/Los_Angeles",
+      "location": "Online Event",
+      "link": "https://www.chakrainstitute.com/upcoming-events-2/the-leadership-exchange-connect-and-plan"
+    },
+    {
+      "title": "Nov Sri Shyamji Sunday Sound Classes - Video",
+      "start": "2026-11-29T09:00",
+      "timezone": "America/Los_Angeles",
+      "location": "Online Event",
+      "link": "https://www.chakrainstitute.com/upcoming-events-2/nov-sri-shyamji-sunday-sound-classes-video"
+    },
+    {
+      "title": "Dec Sri Shyamji Sunday Sound Classes - Video",
+      "start": "2026-12-27T09:00",
+      "timezone": "America/Los_Angeles",
+      "location": "Online Event",
+      "link": "https://www.chakrainstitute.com/upcoming-events-2/dec-sri-shyamji-sunday-sound-classes-video"
+    },
+    {
+      "title": "Jan Sri Shyamji Sunday Sound Classes - Video",
+      "start": "2027-01-24T09:00",
+      "timezone": "America/Los_Angeles",
+      "location": "Online Event",
+      "link": "https://www.chakrainstitute.com/upcoming-events-2/jan-sri-shyamji-sunday-sound-classes-video"
+    },
+    {
+      "title": "Concert Sri Shyamji - Audio Only",
+      "start": "2027-02-05T10:30",
+      "timezone": "America/Los_Angeles",
+      "location": "Online Event",
+      "link": "https://www.chakrainstitute.com/upcoming-events-2/concert-sri-shyamji-audio-only"
+    },
+    {
+      "title": "Winter 3-Body Purification (Advanced Classes MAY be added)",
+      "start": "2027-02-23",
+      "endDate": "2027-02-28",
+      "timezone": "America/Los_Angeles",
+      "location": "Online Event",
+      "link": "https://www.chakrainstitute.com/upcoming-events-2/winter-3-body-purification-feb-23-28-2027-advanced-classes-may-be-added"
+    }
+  ]
+}

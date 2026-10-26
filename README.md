@@ -90,3 +90,34 @@ This page only works while the app is running through `node server.js` (or
 `start-server.bat`/`start-server.sh`), since saving requires writing to a
 file on the computer running the server — it won't work if the site is
 hosted as plain static files without this server behind it.
+
+## Events tab: how to add or change an upcoming event
+
+Events live in **upcoming-events.json** (separate from events.json, which only feeds the once-a-day splash pop-up).
+
+### Steps (GitHub, in the browser or on a phone)
+1. Open your repository on github.com and click **upcoming-events.json**.
+2. Click the **pencil icon** ("Edit this file").
+3. To ADD an event: copy a whole entry from `{` down to its closing `}`, paste it right after another entry's `}` with a **comma** between them, then change the words and dates.
+4. To CHANGE an event: edit the text between the quote marks. To REMOVE one: delete the whole entry from `{` to `}` (and one neighbouring comma). Past events hide themselves, so you do not have to delete them.
+5. Click the green **Commit changes** button, then **Commit changes** again. The app updates itself within a few minutes for people who open it. (If you also push other changes, bump `CACHE_VERSION` in sw.js as usual.)
+
+Rules that avoid mistakes: keep every quote mark `"` and comma exactly as in the examples; there is **no comma after the last entry** in the list; times use the 24-hour clock (9:00 AM = `09:00`, 1:30 PM = `13:30`).
+
+### One entry looks like this
+```json
+{
+  "title": "Free Sunday Sound Classes",
+  "description": "Optional short description.",
+  "start": "2026-12-27T09:00",
+  "end": "2026-12-27T10:15",
+  "timezone": "America/Los_Angeles",
+  "location": "Online Event",
+  "link": "https://www.chakrainstitute.com/upcoming-events-2"
+}
+```
+
+- `start` / `end`: `YYYY-MM-DDTHH:MM`, the time as it reads **in California** on that date (daylight saving is handled automatically). `end` is optional. Leave `timezone` as America/Los_Angeles.
+- All-day or multi-day with no time: `"start": "2027-02-23", "endDate": "2027-02-28"`.
+- Optional translations of the title/description: `"translations": { "fr": { "title": "...", "description": "..." } }` (also `nl`, `es`).
+- If the page ever shows "could not be loaded", the usual cause is a missing or extra comma or quote mark. Paste the file into jsonlint.com to find it.

@@ -16,14 +16,14 @@
  *     caches on activation so no stale files linger.
  *  3. IMMEDIATE TAKEOVER. skipWaiting() + clients.claim() make the new
  *     worker take control right away, and the page (see the registration
- *     snippet in index.html) reloads once when control changes. The page
+ *     snippet in index.html) refreshes once, the next time the app is hidden. The page
  *     also re-checks for a new sw.js on every launch/resume, which matters
  *     for home-screen PWAs that are resumed rather than freshly loaded.
  *
  * >>> RELEASE CHECKLIST: bump CACHE_VERSION below on every update. <<<
  */
 
-const CACHE_VERSION = 'innertuning-2026-10-16-2';
+const CACHE_VERSION = 'innertuning-2026-10-26-6';
 const CACHE_NAME = 'pc-cache-' + CACHE_VERSION;
 
 // Cached up front so the app shell opens offline. Failures here are
@@ -48,6 +48,7 @@ const PRECACHE_URLS = [
   'js/chakra-quiz-data.js',
   'js/mantra-catalog.js',
   'js/translations.js',
+  'js/events-tools.js',
   'js/share-card.js',
   'js/app.js',
   'images/prana-calendar-icon.png',

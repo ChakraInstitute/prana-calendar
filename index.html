@@ -865,6 +865,38 @@
           </div>
         </section>
 
+        <section class="card tz-converter-card">
+          <h2 data-i18n="tzConvTitle">Time Zone Converter</h2>
+          <p class="status-text" data-i18n="tzConvIntro">Choose a date and time, and see what it is in another place. California time is filled in to start. Type your own city or time zone in the other box.</p>
+          <div class="field-row">
+            <label for="tzConvDate" data-i18n="tzDateLabel">Date</label>
+            <input type="date" id="tzConvDate">
+          </div>
+          <div class="field-row">
+            <label for="tzConvTime" data-i18n="tzTimeLabel">Time</label>
+            <input type="time" id="tzConvTime">
+          </div>
+          <div class="field-row">
+            <label for="tzConvFrom" data-i18n="tzFromLabel">From (time zone)</label>
+            <input type="text" id="tzConvFrom" list="tzDatalist" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. Europe/Paris" data-i18n-placeholder="tzZonePlaceholder">
+          </div>
+          <div class="field-row">
+            <label for="tzConvTo" data-i18n="tzToLabel">To (time zone)</label>
+            <input type="text" id="tzConvTo" list="tzDatalist" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. Europe/Paris" data-i18n-placeholder="tzZonePlaceholder">
+          </div>
+          <div class="tz-button-row">
+            <button type="button" id="tzConvSwap" class="small-button" data-i18n="tzSwapBtn">Swap</button>
+            <button type="button" id="tzConvNow" class="link-button" data-i18n="tzNowBtn">Use current date and time</button>
+          </div>
+          <div id="tzConvResult" aria-live="polite"></div>
+        </section>
+
+        <section class="card upcoming-events-card">
+          <h2 data-i18n="upcomingEventsTitle">Upcoming Events</h2>
+          <p class="status-text" data-i18n="upcomingEventsIntro">All event times are in California time. To see a time where you are, use the Time Zone Converter above.</p>
+          <div id="upcomingEventsList"></div>
+        </section>
+
         <section class="card assessment-history-card">
           <h2 data-i18n="quizHistoryTitle">Quiz History</h2>
           <p id="assessmentHistoryEmpty" class="status-text" data-i18n="noQuizzesYet">No quizzes taken yet.</p>
@@ -1369,25 +1401,36 @@
   <script src="js/chakra-quiz-data.js"></script>
   <script src="js/mantra-catalog.js"></script>
   <script src="js/translations.js"></script>
+  <script src="js/events-tools.js"></script>
   <script src="js/share-card.js"></script>
   <script src="js/app.js"></script>
 
   <!-- Service worker registration — keeps installed (home-screen) copies
        up to date automatically. See sw.js for the full update strategy.
        The page re-checks for a new sw.js on launch and whenever the app
-       comes back to the foreground, and reloads once when a new worker
-       takes over so users never keep running stale code. -->
+       comes back to the foreground. When a new worker
+       takes over, the page refreshes the next time the app is hidden, so
+       users are never interrupted mid-use. -->
   <script>
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
       window.addEventListener('load', function () {
         // A controller already existing means this is an UPDATE, not the
-        // first install — only then is a one-time reload warranted.
+        // first install. The new version is already serving files by then,
+        // but the page that is open is still running the old code. Reloading
+        // it right away would interrupt the person (and send them back to
+        // Today), so the reload waits until the app is hidden / switched
+        // away from. The next time they open it, they get the new version.
         var hadController = !!navigator.serviceWorker.controller;
-        var reloaded = false;
+        var pendingReload = false;
         navigator.serviceWorker.addEventListener('controllerchange', function () {
-          if (!hadController || reloaded) { hadController = true; return; }
-          reloaded = true;
-          window.location.reload();
+          if (!hadController) { hadController = true; return; }
+          pendingReload = true;
+        });
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState === 'hidden' && pendingReload) {
+            pendingReload = false;
+            window.location.reload();
+          }
         });
         navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) {
           function check() { try { reg.update(); } catch (e) {} }

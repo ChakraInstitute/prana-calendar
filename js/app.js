@@ -186,6 +186,7 @@
     try { renderDayLordForSelectedDate(); } catch (e) {}
     try { renderChakraTimer(); } catch (e) {}
     try { if (typeof renderChilla === 'function') renderChilla(); } catch (e) {}
+    try { if (window.PcEventsTools) window.PcEventsTools.refresh(); } catch (e) {}
     try { if (typeof renderChakraQuizSummary === 'function') renderChakraQuizSummary(); } catch (e) {}
     try { if (typeof renderAssessmentHistory === 'function') renderAssessmentHistory(); } catch (e) {}
     try { if (typeof renderCalendar === 'function') renderCalendar(); } catch (e) {}
@@ -384,6 +385,7 @@
     runStep('renderReferralEntryCard', renderReferralEntryCard);
     runStep('bindGracefulImageFallbacks', bindGracefulImageFallbacks);
     runStep('initSplash', initSplash);
+    runStep('initEventsTools', initEventsTools);
 
     // The chakra timer tracks the real current moment, so keep it fresh
     // even if the page is just left open.
@@ -649,6 +651,7 @@
     // changed elsewhere (a new nostril check-in, a Chilla started/ended)
     // or the device date has rolled over since it last rendered.
     if (tabName === 'practice') {
+      if (window.PcEventsTools) runStep('eventsTabShown', () => window.PcEventsTools.onTabShown());
       runStep('renderCalendar', renderCalendar);
       runStep('renderAssessmentHistory', renderAssessmentHistory);
     }
@@ -4264,6 +4267,12 @@
         // app — just skip the splash silently (besides this log line).
         console.error('Could not load events.json — splash skipped:', e);
       });
+  }
+
+  // Practice (calendar) tab: time zone converter + Upcoming Events list (js/events-tools.js).
+  function initEventsTools() {
+    if (!window.PcEventsTools) return;
+    window.PcEventsTools.init({ t: pcT, getLang: () => currentLang });
   }
 
   function splashAlreadyShownToday() {

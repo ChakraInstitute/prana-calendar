@@ -2495,3 +2495,21 @@ button:disabled:hover { border-color: var(--border); }
   text-decoration: none;
 }
 .splash-event-link:hover { text-decoration: underline; }
+
+/* ---- Events tab: time zone converter + upcoming events ---- */
+.tz-button-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin: 0.2rem 0 0.8rem; }
+.tz-result-box { border: 1px solid var(--border); border-radius: 10px; padding: 0.4rem 0.8rem; margin: 0.4rem 0; }
+.tz-result-row { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.tz-result-row:last-child { border-bottom: none; }
+.tz-result-label { font-size: 0.8rem; color: var(--muted); }
+.tz-result-value { font-weight: 600; }
+.tz-note { color: var(--tap-accent); }
+.event-item { padding: 0.8rem 0; border-top: 1px solid var(--border); }
+.event-item:first-of-type { border-top: none; }
+.event-title { margin: 0 0 0.3rem; font-size: 1.02rem; }
+.event-title a { color: var(--accent); text-decoration: none; }
+.event-title a:hover { text-decoration: underline; }
+.event-time { margin: 0.15rem 0; font-size: 0.92rem; }
+.event-time-mine { color: var(--muted); }
+.event-location { color: var(--muted); }
+.event-desc { margin: 0.4rem 0 0; font-size: 0.92rem; }
