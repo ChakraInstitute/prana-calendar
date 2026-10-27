@@ -347,13 +347,6 @@
     $('eventsPrefStop').addEventListener('click', () => {
       pref = null; savePref(); updatePrefRow(); updateShowBox(); renderEvents();
     });
-    $('tzConvSwap').addEventListener('click', () => {
-      const a = side.from; side.from = side.to; side.to = a;
-      $('tzConvFromCity').value = side.from.tz ? sideName(side.from) : '';
-      $('tzConvToCity').value = side.to.tz ? sideName(side.to) : '';
-      renderConverter();
-      updateShowBox();
-    });
     $('tzConvNow').addEventListener('click', () => { setNow(); renderConverter(); });
     renderConverter();
   }
