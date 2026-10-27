@@ -23,7 +23,7 @@
  * >>> RELEASE CHECKLIST: bump CACHE_VERSION below on every update. <<<
  */
 
-const CACHE_VERSION = 'innertuning-2026-10-26-6';
+const CACHE_VERSION = 'innertuning-2026-10-26-11';
 const CACHE_NAME = 'pc-cache-' + CACHE_VERSION;
 
 // Cached up front so the app shell opens offline. Failures here are

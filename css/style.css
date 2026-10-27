@@ -2509,7 +2509,38 @@ button:disabled:hover { border-color: var(--border); }
 .event-title { margin: 0 0 0.3rem; font-size: 1.02rem; }
 .event-title a { color: var(--accent); text-decoration: none; }
 .event-title a:hover { text-decoration: underline; }
-.event-time { margin: 0.15rem 0; font-size: 0.92rem; }
-.event-time-mine { color: var(--muted); }
-.event-location { color: var(--muted); }
-.event-desc { margin: 0.4rem 0 0; font-size: 0.92rem; }
+.event-time { margin: 0.5rem 0; font-size: 0.95rem; line-height: 1.45; }
+.event-time-mine { color: var(--text); margin-top: 0.75rem; padding: 0.45rem 0.7rem; border-left: 4px solid var(--tap-accent); background: rgba(156, 122, 31, 0.10); border-radius: 0 8px 8px 0; }
+.event-location { color: var(--muted); margin-top: 0.7rem; }
+.event-desc { margin: 0.6rem 0 0; font-size: 0.92rem; }
+.tz-time-row { display: flex; align-items: center; gap: 0.4rem; }
+.tz-time-row select { flex: 1; min-width: 0; }
+.tz-time-row select[hidden] { display: none; }
+.tz-time-colon { font-weight: 600; }
+.tz-time-row select {
+  padding: 0.55rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 1rem;
+}
+.remember-row[hidden], #eventsPrefRow[hidden] { display: none; }
+#tzConvShowOnEvents {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.8rem 0 1rem;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: var(--text);
+}
+#tzConvShowOnEvents[hidden] { display: none; }
+#tzConvShowOnEventsBox {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin: 0;
+  accent-color: var(--accent);
+}
+#tzConvFromStatus:empty, #tzConvToStatus:empty, #tzConvFromResults:empty, #tzConvToResults:empty { display: none; }

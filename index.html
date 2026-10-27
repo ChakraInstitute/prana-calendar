@@ -867,23 +867,46 @@
 
         <section class="card tz-converter-card">
           <h2 data-i18n="tzConvTitle">Time Zone Converter</h2>
-          <p class="status-text" data-i18n="tzConvIntro">Choose a date and time, and see what it is in another place. California time is filled in to start. Type your own city or time zone in the other box.</p>
+          <p class="status-text" data-i18n="tzConvIntro">Choose a date and time, and see what it is in another place. California is filled in to start. Search for any city in the other box.</p>
           <div class="field-row">
             <label for="tzConvDate" data-i18n="tzDateLabel">Date</label>
             <input type="date" id="tzConvDate">
           </div>
           <div class="field-row">
-            <label for="tzConvTime" data-i18n="tzTimeLabel">Time</label>
-            <input type="time" id="tzConvTime">
+            <label for="tzConvHour" data-i18n="tzTimeLabel">Time</label>
+            <div class="tz-time-row">
+              <select id="tzConvHour" data-i18n-aria-label="tzTimeLabel" aria-label="Time"></select>
+              <span class="tz-time-colon" aria-hidden="true">:</span>
+              <select id="tzConvMin" data-i18n-aria-label="tzTimeLabel" aria-label="Time"></select>
+              <select id="tzConvAmPm" data-i18n-aria-label="tzTimeLabel" aria-label="Time"></select>
+            </div>
           </div>
           <div class="field-row">
-            <label for="tzConvFrom" data-i18n="tzFromLabel">From (time zone)</label>
-            <input type="text" id="tzConvFrom" list="tzDatalist" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. Europe/Paris" data-i18n-placeholder="tzZonePlaceholder">
+            <label for="tzConvFromCity" data-i18n="tzFromLabel">From</label>
+            <div class="input-with-button">
+              <input type="text" id="tzConvFromCity" autocomplete="off" placeholder="e.g. Phoenix, Arizona" data-i18n-placeholder="tzZonePlaceholder">
+              <button type="button" id="tzConvFromSearch" data-i18n="searchBtn">Search</button>
+            </div>
+            <button type="button" id="tzConvFromCA" class="link-button" data-i18n="tzUseCaliforniaBtn">California</button>
+            <p id="tzConvFromStatus" class="status-text" aria-live="polite"></p>
+            <div id="tzConvFromResults" class="city-results"></div>
           </div>
           <div class="field-row">
-            <label for="tzConvTo" data-i18n="tzToLabel">To (time zone)</label>
-            <input type="text" id="tzConvTo" list="tzDatalist" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. Europe/Paris" data-i18n-placeholder="tzZonePlaceholder">
+            <label for="tzConvToCity" data-i18n="tzToLabel">To</label>
+            <div class="input-with-button">
+              <input type="text" id="tzConvToCity" autocomplete="off" placeholder="e.g. Phoenix, Arizona" data-i18n-placeholder="tzZonePlaceholder">
+              <button type="button" id="tzConvToSearch" data-i18n="searchBtn">Search</button>
+            </div>
+            <button type="button" id="tzConvToCA" class="link-button" data-i18n="tzUseCaliforniaBtn">California</button>
+            <p id="tzConvToStatus" class="status-text" aria-live="polite"></p>
+            <div id="tzConvToResults" class="city-results"></div>
           </div>
+
+          <label id="tzConvShowOnEvents" class="remember-row" hidden>
+            <input type="checkbox" id="tzConvShowOnEventsBox">
+            <span id="tzConvShowOnEventsText"></span>
+          </label>
+
           <div class="tz-button-row">
             <button type="button" id="tzConvSwap" class="small-button" data-i18n="tzSwapBtn">Swap</button>
             <button type="button" id="tzConvNow" class="link-button" data-i18n="tzNowBtn">Use current date and time</button>
@@ -894,6 +917,7 @@
         <section class="card upcoming-events-card">
           <h2 data-i18n="upcomingEventsTitle">Upcoming Events</h2>
           <p class="status-text" data-i18n="upcomingEventsIntro">All event times are in California time. To see a time where you are, use the Time Zone Converter above.</p>
+          <p id="eventsPrefRow" class="status-text" hidden><span id="eventsPrefText"></span> <button type="button" id="eventsPrefStop" class="link-button" data-i18n="eventsStopShowing">Stop showing</button></p>
           <div id="upcomingEventsList"></div>
         </section>
 

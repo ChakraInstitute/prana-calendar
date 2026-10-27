@@ -23,6 +23,39 @@
   let events = null; // null = not loaded yet, [] = loaded but empty, 'error'
   let converterReady = false;
 
+  // Optional second place the person chose to see event times in. Stored only
+  // on their own device, and only after they tick the box themselves.
+  const PREF_KEY = 'prana-calendar:eventsExtraZone';
+  let pref = null; // { tz, label } or null
+  function loadPref() {
+    try {
+      const v = JSON.parse(localStorage.getItem(PREF_KEY) || 'null');
+      pref = v && isValidZone(v.tz) && v.label ? { tz: v.tz, label: String(v.label) } : null;
+    } catch (e) { pref = null; }
+  }
+  function savePref() {
+    try {
+      if (pref) localStorage.setItem(PREF_KEY, JSON.stringify(pref));
+      else localStorage.removeItem(PREF_KEY);
+    } catch (e) { /* storage unavailable: it just won't be remembered */ }
+  }
+  function updatePrefRow() {
+    const row = $('eventsPrefRow');
+    if (!row) return;
+    row.hidden = !pref;
+    if (pref) $('eventsPrefText').textContent = t('eventsShowingIn', { place: pref.label });
+  }
+  function updateShowBox() {
+    const box = $('tzConvShowOnEvents');
+    if (!box) return;
+    const to = side.to;
+    const ok = !!to.tz && to.tz !== CA_ZONE;
+    box.hidden = !ok;
+    if (!ok) return;
+    $('tzConvShowOnEventsText').textContent = t('tzShowOnEvents', { place: sideName(to) });
+    $('tzConvShowOnEventsBox').checked = !!(pref && pref.tz === to.tz);
+  }
+
   const $ = (id) => document.getElementById(id);
   const locale = () => LOCALES[getLang()] || 'en-US';
 
@@ -111,22 +144,67 @@
 
   function pad(n) { return String(n).padStart(2, '0'); }
 
+  // The two places being converted. label === null means "California"
+  // (its name is translated on the fly). to.tz === '' means not chosen yet.
+  const side = { from: { tz: CA_ZONE, label: null }, to: { tz: '', label: '' } };
+  const sideName = (sd) => sd.label || zoneLabel(sd.tz);
+
+  // Time of day is chosen with three plain drop-downs (hour, minute, AM/PM)
+  // instead of the browser's own time box, whose minute wheel runs past 59
+  // and can quietly push the hour forward. Here minutes always start at 00
+  // and can never change the hour. English uses a 12-hour clock with AM/PM;
+  // the other languages use a 24-hour clock.
+  const uses12h = () => getLang() === 'en';
+  let lastTime = null; // last chosen { h, m } in 24h form, kept across language switches
+
+  function getTime() {
+    const hSel = $('tzConvHour'), mSel = $('tzConvMin'), apSel = $('tzConvAmPm');
+    if (!hSel.value || !mSel.value) return null;
+    let h = +hSel.value;
+    if (uses12h()) h = (h % 12) + (apSel.value === 'PM' ? 12 : 0);
+    return { h, m: +mSel.value };
+  }
+
+  function setTime(h, m) {
+    lastTime = { h, m };
+    const hSel = $('tzConvHour'), mSel = $('tzConvMin'), apSel = $('tzConvAmPm');
+    const twelve = uses12h();
+    hSel.textContent = ''; mSel.textContent = ''; apSel.textContent = '';
+    const opt = (sel, value, text) => {
+      const o = document.createElement('option');
+      o.value = String(value); o.textContent = text; sel.appendChild(o);
+    };
+    if (twelve) {
+      for (let i = 1; i <= 12; i++) opt(hSel, i, String(i));
+      opt(apSel, 'AM', 'AM'); opt(apSel, 'PM', 'PM');
+      hSel.value = String(h % 12 === 0 ? 12 : h % 12);
+      apSel.value = h >= 12 ? 'PM' : 'AM';
+    } else {
+      for (let i = 0; i < 24; i++) opt(hSel, i, pad(i));
+      hSel.value = String(h);
+    }
+    apSel.hidden = !twelve;
+    for (let i = 0; i < 60; i++) opt(mSel, i, pad(i));
+    mSel.value = String(m);
+  }
+
   function setNow() {
-    const from = $('tzConvFrom').value.trim();
-    const tz = isValidZone(from) ? from : CA_ZONE;
+    const tz = side.from.tz || CA_ZONE;
     const p = pcLocalParts(new Date(), tz);
     $('tzConvDate').value = p.year + '-' + pad(p.month) + '-' + pad(p.day);
-    $('tzConvTime').value = pad(p.hour) + ':' + pad(p.minute);
+    setTime(p.hour, p.minute);
   }
 
   function renderConverter() {
     const out = $('tzConvResult');
     if (!out) return;
     out.textContent = '';
-    const from = $('tzConvFrom').value.trim();
-    const to = $('tzConvTo').value.trim();
+    const from = side.from.tz;
+    const to = side.to.tz;
+    const fromName = side.from.tz ? sideName(side.from) : '';
+    const toName = side.to.tz ? sideName(side.to) : '';
     const dateVal = $('tzConvDate').value;
-    const timeVal = $('tzConvTime').value;
+    const tmv = getTime();
 
     const msg = (key, vars, cls) => {
       const p = document.createElement('p');
@@ -135,14 +213,12 @@
       out.appendChild(p);
     };
 
-    if (!to && isValidZone(from)) { msg('tzEnterZone'); return; }
-    if (!isValidZone(from) || !isValidZone(to)) { msg('tzInvalidZone'); return; }
+    if (!from || !to) { msg('tzEnterZone'); return; }
     const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateVal);
-    const tm = /^(\d{2}):(\d{2})$/.exec(timeVal);
-    if (!dm || !tm) { msg('tzNeedDate'); return; }
+    if (!dm || !tmv) { msg('tzNeedDate'); return; }
 
-    const r = zonedToUtc(+dm[1], +dm[2], +dm[3], +tm[1], +tm[2], from);
-    if (r.status === 'skipped') { msg('tzSkippedHour', { zone: zoneLabel(from) }); return; }
+    const r = zonedToUtc(+dm[1], +dm[2], +dm[3], tmv.h, tmv.m, from);
+    if (r.status === 'skipped') { msg('tzSkippedHour', { zone: fromName }); return; }
     const inst = r.date;
 
     // Rows: From, To, and California (if not already one of those). Nothing
@@ -155,8 +231,8 @@
       seen.add(text);
       rows.push({ labelText, text });
     };
-    add(zoneLabel(from), from);
-    add(zoneLabel(to), to);
+    add(fromName, from);
+    add(toName, to);
     if (from !== CA_ZONE && to !== CA_ZONE) add(t('tzResultCalifornia'), CA_ZONE);
 
     const box = document.createElement('div');
@@ -178,31 +254,105 @@
     const gapAt = (dt) => offsetMin(dt, to) - offsetMin(dt, from);
     const gap = gapAt(inst);
     if (gap === 0) msg('tzGapSame');
-    else msg(gap > 0 ? 'tzGapAhead' : 'tzGapBehind', { to: zoneLabel(to), from: zoneLabel(from), gap: gapText(gap) });
+    else msg(gap > 0 ? 'tzGapAhead' : 'tzGapBehind', { to: toName, from: fromName, gap: gapText(gap) });
 
-    if (r.status === 'ambiguous') msg('tzAmbiguousHour', { zone: zoneLabel(from) }, 'tz-note');
+    if (r.status === 'ambiguous') msg('tzAmbiguousHour', { zone: fromName }, 'tz-note');
     const W = 21 * 86400000;
     if (gapAt(new Date(inst.getTime() - W)) !== gap || gapAt(new Date(inst.getTime() + W)) !== gap) {
       msg('tzClockChangeNote', null, 'tz-note');
     }
   }
 
+  function syncInputs() {
+    ['from', 'to'].forEach((w) => {
+      const input = $('tzConv' + (w === 'from' ? 'From' : 'To') + 'City');
+      if (!input) return;
+      if (side[w].tz) input.value = sideName(side[w]);
+    });
+  }
+
+  function choose(w, tz, label) {
+    side[w] = { tz, label };
+    const cap = w === 'from' ? 'From' : 'To';
+    $('tzConv' + cap + 'City').value = sideName(side[w]);
+    $('tzConv' + cap + 'Results').textContent = '';
+    $('tzConv' + cap + 'Status').textContent = '';
+    if (w === 'from') setNow();
+    renderConverter();
+    updateShowBox();
+  }
+
+  async function searchSide(w) {
+    const cap = w === 'from' ? 'From' : 'To';
+    const input = $('tzConv' + cap + 'City');
+    const status = $('tzConv' + cap + 'Status');
+    const results = $('tzConv' + cap + 'Results');
+    const q = input.value.trim();
+    results.textContent = '';
+    status.textContent = '';
+    if (!q) { status.textContent = t('enterCityNameFirst'); return; }
+    // Power users can still type a zone name such as Europe/Paris directly.
+    if (q.indexOf('/') > 0 && isValidZone(q)) { choose(w, q, zoneLabel(q)); return; }
+    if (typeof pcGeocodeCity !== 'function') { status.textContent = t('cityLookupFailed'); return; }
+    status.textContent = t('searchingStatus');
+    try {
+      const list = await pcGeocodeCity(q);
+      if (!list.length) { status.textContent = t('tzNoCityMatch'); return; }
+      if (list.length === 1) { choose(w, list[0].timezone, list[0].label); return; }
+      status.textContent = t('selectAMatch');
+      list.forEach((r) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'city-option';
+        btn.textContent = r.label + ' \u2014 ' + r.timezone;
+        btn.addEventListener('click', () => choose(w, r.timezone, r.label));
+        results.appendChild(btn);
+      });
+    } catch (e) {
+      console.error('Converter city search failed:', e);
+      status.textContent = e && e.message ? e.message : t('cityLookupFailed');
+    }
+  }
+
   function initConverter() {
-    if (converterReady || !$('tzConvFrom')) return;
+    if (converterReady || !$('tzConvFromCity')) return;
     converterReady = true;
     // "From" starts as California so people can enter e.g. 9:00 AM California;
-    // "To" starts empty for them to type their own place. Nothing is read
-    // from the device's own time zone setting.
-    $('tzConvFrom').value = CA_ZONE;
-    $('tzConvTo').value = '';
+    // "To" starts empty for them to search for their own city. Nothing is
+    // read from the device's own time zone setting.
+    syncInputs();
     setNow();
-    ['tzConvDate', 'tzConvTime'].forEach((id) => $(id).addEventListener('input', renderConverter));
-    ['tzConvFrom', 'tzConvTo'].forEach((id) => $(id).addEventListener('change', renderConverter));
+    ['from', 'to'].forEach((w) => {
+      const cap = w === 'from' ? 'From' : 'To';
+      const input = $('tzConv' + cap + 'City');
+      $('tzConv' + cap + 'Search').addEventListener('click', () => searchSide(w));
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); searchSide(w); } });
+      // Editing the text un-selects the place until it is searched again.
+      input.addEventListener('input', () => {
+        if (side[w].tz && input.value !== sideName(side[w])) { side[w] = { tz: '', label: '' }; renderConverter(); updateShowBox(); }
+      });
+      $('tzConv' + cap + 'CA').addEventListener('click', () => choose(w, CA_ZONE, null));
+    });
+    ['tzConvDate', 'tzConvHour', 'tzConvMin', 'tzConvAmPm'].forEach((id) => {
+      const onTimeEdit = () => { const t2 = getTime(); if (t2) lastTime = t2; renderConverter(); };
+      $(id).addEventListener('input', onTimeEdit);
+      $(id).addEventListener('change', onTimeEdit);
+    });
+    $('tzConvShowOnEventsBox').addEventListener('change', () => {
+      const to = side.to;
+      if ($('tzConvShowOnEventsBox').checked && to.tz) pref = { tz: to.tz, label: sideName(to) };
+      else if (pref && pref.tz === to.tz) pref = null;
+      savePref(); updatePrefRow(); renderEvents();
+    });
+    $('eventsPrefStop').addEventListener('click', () => {
+      pref = null; savePref(); updatePrefRow(); updateShowBox(); renderEvents();
+    });
     $('tzConvSwap').addEventListener('click', () => {
-      const a = $('tzConvFrom').value;
-      $('tzConvFrom').value = $('tzConvTo').value;
-      $('tzConvTo').value = a;
+      const a = side.from; side.from = side.to; side.to = a;
+      $('tzConvFromCity').value = side.from.tz ? sideName(side.from) : '';
+      $('tzConvToCity').value = side.to.tz ? sideName(side.to) : '';
       renderConverter();
+      updateShowBox();
     });
     $('tzConvNow').addEventListener('click', () => { setNow(); renderConverter(); });
     renderConverter();
@@ -310,6 +460,10 @@
         line('', allDayText(ev));
       } else {
         line(ev.tz === CA_ZONE ? t('tzResultCalifornia') : zoneLabel(ev.tz), rangeText(ev, ev.tz), 'event-time-ca');
+        if (pref && pref.tz !== ev.tz) {
+          const mine = rangeText(ev, pref.tz);
+          if (mine !== rangeText(ev, ev.tz)) line(pref.label, mine, 'event-time-mine');
+        }
       }
 
       if (ev.raw.location) line('', ev.raw.location, 'event-location');
@@ -344,10 +498,15 @@
     init(opts) {
       if (opts && opts.t) t = opts.t;
       if (opts && opts.getLang) getLang = opts.getLang;
+      loadPref();
       initConverter();
+      updatePrefRow();
       loadEvents();
     },
-    refresh() { renderConverter(); renderEvents(); },
+    refresh() {
+      if (lastTime && $('tzConvHour')) setTime(lastTime.h, lastTime.m);
+      syncInputs(); renderConverter(); updateShowBox(); updatePrefRow(); renderEvents();
+    },
     onTabShown() { renderEvents(); },
     // exposed for tests
     _zonedToUtc: zonedToUtc,
