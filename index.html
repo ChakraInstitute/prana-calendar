@@ -435,19 +435,6 @@
           </div>
         </section>
 
-        <section class="card referral-entry-card">
-          <h2 data-i18n="referralTitle">Referral</h2>
-          <div id="referralEntryFormRow">
-            <p class="referral-entry-label" data-i18n="referralLabel">Were you referred by a friend? Enter their referral code here</p>
-            <div class="referral-entry-row">
-              <input type="text" id="referralEntryCodeInput" class="referral-entry-code-input" placeholder="Referral code" autocomplete="off" autocapitalize="characters" data-i18n-placeholder="referralCodePlaceholder">
-              <button type="button" id="referralEntrySubmitBtn" class="small-button" data-i18n="submitBtn">Submit</button>
-            </div>
-            <p id="referralEntryError" class="field-error" hidden data-i18n="referralError">Please enter a referral code.</p>
-          </div>
-          <p id="referralEntryThanks" class="referral-entry-thanks" hidden data-i18n="referralThanks">Thanks! Your friend will be notified to email admin@chakrainstitute.com to claim their free mantra reward.</p>
-        </section>
-
         <section class="card donate-card">
           <h2 data-i18n="donateTitle">Donate</h2>
           <p data-i18n="donateBody">The Chakra Institute is a 501(c)3 nonprofit. Every contribution goes directly toward preserving and sharing Sri Shyamji's sacred teachings for the benefit of humanity. Donations are tax-deductible.</p>
@@ -525,38 +512,10 @@
         <section id="earnMantraCard" class="card earn-mantra-card">
           <h2 data-i18n="earnMantraTitle">Earn a Free Mantra</h2>
 
-          <div id="referralJoinedBanner" class="referral-joined-banner" hidden>
-            <p><span data-i18n="referralJoinedPrefix">Your friend joined! Email</span> <a href="mailto:admin@chakrainstitute.com">admin@chakrainstitute.com</a> <span data-i18n="referralJoinedSuffix">with your referral code to claim your free mantra reward.</span></p>
-          </div>
-
           <div class="earn-mantra-option">
             <h3 data-i18n="option1Title">Option 1 — Social Share</h3>
             <p data-i18n="option1Body">Share 3 of our posts to your story and tag @SriCentreHomeofChakraInstitute on Instagram. We will send you a free mantra code within 24 hours.</p>
             <a id="openInstagramBtn" class="small-button" href="https://www.instagram.com/SriCentreHomeofChakraInstitute" target="_blank" rel="noopener" data-i18n="openInstagramBtn">Open Instagram</a>
-          </div>
-
-          <div class="earn-mantra-option">
-            <h3 data-i18n="option2Title">Option 2 — Referral</h3>
-            <p data-i18n="option2Body">Share your unique referral link — when 2 friends download and open the app you earn a free mantra.</p>
-
-            <div id="referralEmailPromptRow">
-              <p class="referral-email-prompt-text" data-i18n="referralEmailPromptText">Enter your email so we can send you your free mantra reward when your friend joins.</p>
-              <div class="field-row">
-                <label for="referralOwnEmailInput" data-i18n="yourEmailLabel">Your email</label>
-                <input type="email" id="referralOwnEmailInput" placeholder="you@example.com">
-              </div>
-              <button type="button" id="referralEmailContinueBtn" class="small-button" data-i18n="continueBtn">Continue</button>
-            </div>
-
-            <div id="referralCodeRow" hidden>
-              <p class="referral-code-label" data-i18n="yourReferralCodeLabel">Your referral code:</p>
-              <p id="referralCodeText" class="referral-code-text"></p>
-              <div class="earn-mantra-option-buttons">
-                <button type="button" id="copyReferralCodeBtn" class="small-button" data-i18n="copyReferralCodeBtn">Copy referral code</button>
-                <button type="button" id="shareReferralCodeBtn" class="small-button" data-i18n="shareReferralCodeBtn">Share referral code</button>
-              </div>
-              <p id="referralCopiedNote" class="referral-copied-note" hidden data-i18n="copiedNote">Copied!</p>
-            </div>
           </div>
 
           <p class="earn-mantra-footnote" data-i18n="earnMantraFootnote">Your free mantra code can be applied to any mantra in the app. Codes are single use.</p>

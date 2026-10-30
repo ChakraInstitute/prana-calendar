@@ -29,9 +29,6 @@
   const CHAKRA_QUIZ_HISTORY_KEY = 'prana-calendar:chakraQuizHistory';
   const CHAKRA_QUIZ_COUNTER_KEY = 'prana-calendar:chakraQuizCounter';
   const CHAKRA_QUIZ_HIDE_KEY = 'prana-calendar:chakraQuizHidePref';
-  const REFERRAL_ENTERED_KEY = 'prana-calendar:referralEntered'; // { code, dateIso } — set once, when THIS device enters someone else's code
-  const MY_REFERRAL_CODE_KEY = 'prana-calendar:myReferralCode';
-  const MY_REFERRAL_EMAIL_KEY = 'prana-calendar:myReferralEmail';
   const UNLOCKED_MANTRAS_KEY = 'prana-calendar:unlockedMantras'; // { mantraKey: true, ... } — permanent, per device
   const SPLASH_LAST_SHOWN_KEY = 'prana-calendar:splashLastShown'; // deviceTodayIso() string, last date the splash was shown
   const NITYA_SCHEME_KEY = 'prana-calendar:nityaScheme'; // 'classical' | 'nityotsava' — persisted, but always tappable to switch
@@ -381,8 +378,6 @@
     runStep('renderChakraQuizSummary', renderChakraQuizSummary);
     runStep('renderAssessmentHistory', renderAssessmentHistory);
     runStep('initEmailJs', initEmailJs);
-    runStep('renderEarnMantraCard', renderEarnMantraCard);
-    runStep('renderReferralEntryCard', renderReferralEntryCard);
     runStep('bindGracefulImageFallbacks', bindGracefulImageFallbacks);
     runStep('initSplash', initSplash);
     runStep('initEventsTools', initEventsTools);
@@ -561,21 +556,6 @@
       'confirmDialogMessage',
       'confirmDialogCancelBtn',
       'confirmDialogConfirmBtn',
-      'referralEntryFormRow',
-      'referralEntryCodeInput',
-      'referralEntryError',
-      'referralEntrySubmitBtn',
-      'referralEntryThanks',
-      'earnMantraCard',
-      'referralJoinedBanner',
-      'referralEmailPromptRow',
-      'referralOwnEmailInput',
-      'referralEmailContinueBtn',
-      'referralCodeRow',
-      'referralCodeText',
-      'copyReferralCodeBtn',
-      'shareReferralCodeBtn',
-      'referralCopiedNote',
       'emailResultsRow',
       'emailResultsInput',
       'emailResultsSendBtn',
@@ -1406,23 +1386,6 @@
       if (callback) callback();
     });
 
-    // Today tab — quiet "Were you referred by a friend?" referral code entry.
-    safeBind(els.referralEntryCodeInput, 'input', () => {
-      const hasCode = !!(els.referralEntryCodeInput.value || '').trim();
-      if (hasCode && els.referralEntryError) els.referralEntryError.setAttribute('hidden', '');
-    });
-    safeBind(els.referralEntryCodeInput, 'keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        submitReferralEntryForm();
-      }
-    });
-    safeBind(els.referralEntrySubmitBtn, 'click', submitReferralEntryForm);
-
-    // Mantra tab — "Earn a Free Mantra".
-    safeBind(els.referralEmailContinueBtn, 'click', submitReferralOwnEmail);
-    safeBind(els.copyReferralCodeBtn, 'click', copyReferralCode);
-    safeBind(els.shareReferralCodeBtn, 'click', shareReferralCode);
 
     // Quiz results — optional "Email me my results".
     safeBind(els.emailResultsSendBtn, 'click', submitEmailResults);
@@ -3772,7 +3735,7 @@
   // EMAILJS_TEMPLATE_ID_RESULTS) — see that file for what to fill in. Every
   // function here fails SILENTLY (console.warn only) when EmailJS isn't
   // configured yet or the send itself fails, so a missing/placeholder key
-  // never blocks the surrounding UI flow (the referral form still saves and
+  // never blocks the surrounding UI flow (the quiz-results email still works and
   // shows its confirmation, the results page still shows results) — only
   // the actual outbound email is skipped.
 
@@ -3794,8 +3757,7 @@
     return (
       !placeholderLike(EMAILJS_PUBLIC_KEY) &&
       !placeholderLike(EMAILJS_SERVICE_ID) &&
-      !placeholderLike(EMAILJS_TEMPLATE_ID_RESULTS) &&
-      !placeholderLike(EMAILJS_TEMPLATE_ID_REFERRAL)
+      !placeholderLike(EMAILJS_TEMPLATE_ID_RESULTS)
     );
   }
 
@@ -3828,8 +3790,8 @@
     if (!emailJsCredentialsLookReal()) {
       console.warn(
         'EmailJS credentials still look like placeholders (js/emailjs-config.js) — email sending is ' +
-          'disabled until EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID_RESULTS and ' +
-          'EMAILJS_TEMPLATE_ID_REFERRAL are all filled in with real values.'
+          'disabled until EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID and ' +
+          'EMAILJS_TEMPLATE_ID_RESULTS are filled in with real values.'
       );
       return;
     }
@@ -3845,24 +3807,6 @@
       console.warn('EmailJS init() threw — email sending is disabled this session:', e);
       emailJsInitialized = false;
     }
-  }
-
-  // Short "here's what happened" notifications to admin — used for both the
-  // Today-tab referral code entry and the "create my referral code" flow.
-  function sendEmailJsAdminNotify(subject, message) {
-    if (!emailJsReady()) {
-      console.warn('EmailJS not configured — admin notification NOT sent:', subject, '|', message);
-      return Promise.resolve({ skipped: true });
-    }
-    return emailjs
-      .send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID_ADMIN_NOTIFY, {
-        to_email: PC_CHAKRA_CONTACT_EMAIL,
-        subject,
-        message,
-      })
-      .catch((e) => {
-        console.warn('EmailJS admin notify failed:', e);
-      });
   }
 
   // The "Email me my results" send on the quiz results page. Template
@@ -3881,207 +3825,6 @@
       mantra_list: vars.mantra_list || '',
       sustain_message: vars.sustain_message || '',
     });
-  }
-
-  // The referral-code-entered notification (Today tab, "Were you referred
-  // by a friend?"). Template variables: referral_code, referrer_email, date.
-  // referrer_email is always sent blank now — the entry form only collects
-  // the code itself (see submitReferralEntryForm) — the code alone is
-  // enough to track redemptions manually.
-  function sendEmailJsReferralNotify(referralCode, dateIso) {
-    if (!emailJsReady() || typeof EMAILJS_TEMPLATE_ID_REFERRAL === 'undefined') {
-      console.warn('EmailJS not configured — referral notification NOT sent for code', referralCode);
-      return Promise.resolve({ skipped: true });
-    }
-    return emailjs
-      .send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID_REFERRAL, {
-        referral_code: referralCode,
-        referrer_email: '',
-        date: dateIso,
-      })
-      .catch((e) => {
-        console.warn('EmailJS referral notify failed:', e);
-      });
-  }
-
-  // --- Today tab: quiet "Were you referred by a friend?" referral entry ---
-  //
-  // No longer a first-launch modal — just a small, easy-to-ignore field at
-  // the bottom of the Today tab. A device that has already entered a code
-  // (REFERRAL_ENTERED_KEY set) quietly shows the thank-you note instead of
-  // the form every time, rather than asking again.
-
-  function renderReferralEntryCard() {
-    const alreadyEntered = !!loadReferralEntered();
-    if (els.referralEntryFormRow) els.referralEntryFormRow.toggleAttribute('hidden', alreadyEntered);
-    if (els.referralEntryThanks) els.referralEntryThanks.toggleAttribute('hidden', !alreadyEntered);
-    if (!alreadyEntered && els.referralEntryError) els.referralEntryError.setAttribute('hidden', '');
-  }
-
-  function loadReferralEntered() {
-    try {
-      const raw = localStorage.getItem(REFERRAL_ENTERED_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-      console.error('Could not read referral-entered record:', e);
-      return null;
-    }
-  }
-
-  // Just the code — no friend name or referrer email are collected any
-  // more (that was too much friction for a quiet, easy-to-ignore field).
-  // The admin notification still carries the code itself, which is enough
-  // to track redemptions manually.
-  function submitReferralEntryForm() {
-    const code = (els.referralEntryCodeInput.value || '').trim();
-    if (!code) {
-      if (els.referralEntryError) els.referralEntryError.removeAttribute('hidden');
-      return;
-    }
-    if (els.referralEntryError) els.referralEntryError.setAttribute('hidden', '');
-
-    const dateIso = deviceTodayIso();
-    try {
-      localStorage.setItem(REFERRAL_ENTERED_KEY, JSON.stringify({ code, dateIso }));
-    } catch (e) {
-      console.error('Could not save referral entry:', e);
-    }
-
-    sendEmailJsReferralNotify(code, dateIso);
-
-    renderReferralEntryCard();
-    renderEarnMantraCard(); // in case this same device also holds its own referral code (see checkReferralJoinedLocally)
-  }
-
-  // --- Mantra tab: "Earn a Free Mantra" -------------------------------------
-
-  function generateReferralCode() {
-    // Short, easy to read aloud/type — uppercase letters + digits, no
-    // easily-confused characters (0/O, 1/I) excluded.
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
-    for (let i = 0; i < 8; i++) {
-      code += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return code;
-  }
-
-  function getMyReferralCode() {
-    try {
-      return localStorage.getItem(MY_REFERRAL_CODE_KEY);
-    } catch (e) {
-      console.error('Could not read referral code:', e);
-      return null;
-    }
-  }
-
-  function getMyReferralEmail() {
-    try {
-      return localStorage.getItem(MY_REFERRAL_EMAIL_KEY);
-    } catch (e) {
-      console.error('Could not read referral email:', e);
-      return null;
-    }
-  }
-
-  // Renders the card's current state: the email-prompt sub-form until the
-  // user has provided their own email (once, ever — after that the code is
-  // shown directly every time), and the "your friend joined" banner when
-  // this SAME device holds both a referral it created AND a referral it
-  // entered under the identical code — see the comment on
-  // checkReferralJoinedLocally for why that's the only case this
-  // no-backend app can actually detect.
-  function renderEarnMantraCard() {
-    if (!els.earnMantraCard) return;
-    const myEmail = getMyReferralEmail();
-    const myCode = getMyReferralCode();
-
-    if (myEmail && myCode) {
-      els.referralEmailPromptRow.setAttribute('hidden', '');
-      els.referralCodeRow.removeAttribute('hidden');
-      els.referralCodeText.textContent = myCode;
-    } else {
-      els.referralCodeRow.setAttribute('hidden', '');
-      els.referralEmailPromptRow.removeAttribute('hidden');
-    }
-
-    if (els.referralJoinedBanner) {
-      els.referralJoinedBanner.toggleAttribute('hidden', !checkReferralJoinedLocally());
-    }
-  }
-
-  // IMPORTANT LIMITATION: this app has no backend/server — it's pure
-  // localStorage on one device. There is no real way for this device to
-  // learn that a friend, on THEIR OWN device, entered this device's
-  // referral code — that would need a shared database somewhere, which
-  // EmailJS (outbound email only) cannot provide either. What CAN be
-  // detected, entirely locally, is the one same-device case: this device
-  // both created a referral code (as the referrer) AND separately entered
-  // a referral code (as an entered "friend" value) that happens to match —
-  // useful for testing/demoing the banner, not a real cross-device signal.
-  // A genuine "your friend joined" notification needs a real backend (or a
-  // service like Firebase) to look up redemptions server-side.
-  function checkReferralJoinedLocally() {
-    const myCode = getMyReferralCode();
-    if (!myCode) return false;
-    try {
-      const raw = localStorage.getItem(REFERRAL_ENTERED_KEY);
-      if (!raw) return false;
-      const entered = JSON.parse(raw);
-      return entered && entered.code === myCode;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function submitReferralOwnEmail() {
-    const email = (els.referralOwnEmailInput.value || '').trim();
-    if (!email) return;
-    try {
-      localStorage.setItem(MY_REFERRAL_EMAIL_KEY, email);
-    } catch (e) {
-      console.error('Could not save referral email:', e);
-    }
-    let code = getMyReferralCode();
-    if (!code) {
-      code = generateReferralCode();
-      try {
-        localStorage.setItem(MY_REFERRAL_CODE_KEY, code);
-      } catch (e) {
-        console.error('Could not save referral code:', e);
-      }
-    }
-    sendEmailJsAdminNotify(
-      'Prana Calendar — Referral Code Created',
-      `A referral code was just created. Code: ${code}. User email: ${email}. Date: ${deviceTodayIso()}.`
-    );
-    renderEarnMantraCard();
-  }
-
-  function copyReferralCode() {
-    const code = getMyReferralCode();
-    if (!code) return;
-    const showCopied = () => {
-      if (!els.referralCopiedNote) return;
-      els.referralCopiedNote.removeAttribute('hidden');
-      setTimeout(() => els.referralCopiedNote.setAttribute('hidden', ''), 2000);
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(showCopied).catch(() => showCopied());
-    } else {
-      showCopied();
-    }
-  }
-
-  function shareReferralCode() {
-    const code = getMyReferralCode();
-    if (!code) return;
-    const shareText = `Join me on Prana Calendar! Use my referral code ${code} when you open the app.`;
-    if (navigator.share) {
-      navigator.share({ text: shareText }).catch(() => {});
-    } else {
-      copyReferralCode();
-    }
   }
 
   // --- Quiz results: "Email me my results" ----------------------------------

@@ -1945,44 +1945,11 @@ button:disabled:hover { border-color: var(--border); }
   font-size: 0.8rem;
 }
 
-/* Today tab — quiet "Were you referred by a friend?" referral code entry */
 
-.referral-entry-card {
-  background: transparent;
-  border-style: dashed;
-}
-.referral-entry-label {
-  margin: 0 0 0.6rem;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-.referral-entry-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.referral-entry-code-input {
-  flex: 1;
-  min-width: 9rem;
-  padding: 0.55rem 0.7rem;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--card-bg);
-  color: var(--text);
-  font-size: 0.9rem;
-}
-#referralEntryDetailsRow {
-  margin-top: 0.7rem;
-}
 .field-error {
   color: #c0392b;
   font-size: 0.82rem;
   margin: 0.4rem 0 0.9rem;
-}
-.referral-entry-thanks {
-  color: var(--muted);
-  font-size: 0.85rem;
-  margin: 0;
 }
 
 /* Earn a Free Mantra (Mantra tab) */
@@ -2012,26 +1979,6 @@ button:disabled:hover { border-color: var(--border); }
   flex-wrap: wrap;
   gap: 0.6rem;
   margin-top: 0.5rem;
-}
-.referral-email-prompt-text {
-  margin: 0 0 0.6rem;
-}
-.referral-code-label {
-  margin: 0 0 0.3rem;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-.referral-code-text {
-  font-family: monospace;
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  margin: 0 0 0.6rem;
-}
-.referral-copied-note {
-  margin: 0.5rem 0 0;
-  font-size: 0.82rem;
-  color: #2f8f4e;
 }
 .earn-mantra-footnote {
   font-size: 0.8rem;
@@ -2318,18 +2265,6 @@ button:disabled:hover { border-color: var(--border); }
 }
 .plain-list li { margin: 0 0 0.3rem; }
 
-.referral-joined-banner {
-  background: rgba(47, 143, 78, 0.12);
-  border: 1px solid #2f8f4e;
-  border-radius: 8px;
-  padding: 0.7rem 0.9rem;
-  margin: 0 0 1rem;
-}
-.referral-joined-banner p {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--text);
-}
 
 /* Quiz results — "Email me my results", now the first thing shown on the
    results page (see index.html), styled as its own prominent card rather
