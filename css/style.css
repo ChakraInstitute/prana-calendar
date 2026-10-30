@@ -1952,39 +1952,7 @@ button:disabled:hover { border-color: var(--border); }
   margin: 0.4rem 0 0.9rem;
 }
 
-/* Earn a Free Mantra (Mantra tab) */
 
-.earn-mantra-card {
-  border: 1px solid var(--accent, #caa257);
-  background: rgba(202, 162, 87, 0.08);
-}
-.earn-mantra-option {
-  margin: 1rem 0;
-  padding: 0.9rem 1rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-.earn-mantra-option h3 {
-  margin: 0 0 0.5rem;
-  font-size: 0.95rem;
-}
-.earn-mantra-option p {
-  margin: 0 0 0.75rem;
-  font-size: 0.88rem;
-  color: var(--muted);
-}
-.earn-mantra-option-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-top: 0.5rem;
-}
-.earn-mantra-footnote {
-  font-size: 0.8rem;
-  color: var(--muted);
-  margin: 1rem 0 0;
-}
 /* Donate (bottom of Mantra tab) */
 
 .donate-card p {
