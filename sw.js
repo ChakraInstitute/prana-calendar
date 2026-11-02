@@ -1,5 +1,5 @@
 /*
- * sw.js — service worker for the InnerTuning — Prana Calendar PWA.
+ * sw.js — service worker for the Prana Calendar PWA.
  *
  * GOAL: when the app is updated, installed copies (home-screen PWAs)
  * pick up the new version automatically — no reinstall.
@@ -23,8 +23,9 @@
  * >>> RELEASE CHECKLIST: bump CACHE_VERSION below on every update. <<<
  */
 
-const CACHE_VERSION = 'innertuning-2026-10-30-2';
+const CACHE_VERSION = 'prana-2026-11-02-1';
 const CACHE_NAME = 'pc-cache-' + CACHE_VERSION;
+const PLACES_CACHE = 'pc-places-v1'; // deliberately NOT prefixed 'pc-cache-' so releases do not delete it
 
 // Cached up front so the app shell opens offline. Failures here are
 // tolerated (a missing file must never block an update from installing).
@@ -88,6 +89,24 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/') || url.pathname.includes('admin') || url.pathname.includes('livereload')) return;
   // Audio/video use Range requests; the cache can't serve those correctly.
   if (req.headers.has('range')) return;
+
+  // The city list (places/v1/*) never changes within a version (the folder name
+  // carries the version), so it is served cache-first from its OWN cache, which
+  // is not cleared on app updates. Pieces already used keep working offline.
+  if (url.pathname.indexOf('/places/v1/') !== -1) {
+    event.respondWith(
+      caches.open(PLACES_CACHE).then((cache) =>
+        cache.match(req).then((hit) =>
+          hit ||
+          fetch(req).then((res) => {
+            if (res && res.ok) cache.put(req, res.clone()).catch(() => {});
+            return res;
+          })
+        )
+      )
+    );
+    return;
+  }
 
   event.respondWith(
     fetch(req, { cache: 'no-cache' })

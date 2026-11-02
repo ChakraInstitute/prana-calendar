@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>InnerTuning — Prana Calendar</title>
+  <title>Prana Calendar</title>
 
   <!-- PWA — lets the app be installed to the home screen on iPhone and
-       Android as "InnerTuning — Prana Calendar". The manifest supplies the
+       Android as "Prana Calendar". The manifest supplies the
        install name/icon for Android/Chrome; the apple-* tags below cover
        the equivalent "Add to Home Screen" behavior on iOS Safari, which
        does not read manifest.json for its home-screen icon or title. Note:
@@ -21,7 +21,7 @@
   <link rel="apple-touch-icon" href="images/prana-calendar-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="InnerTuning — Prana Calendar">
+  <meta name="apple-mobile-web-app-title" content="Prana Calendar">
 
   <link rel="stylesheet" href="css/style.css">
   <!-- Constant Contact newsletter signup — Universal Code (once per page).
@@ -206,6 +206,7 @@
           </div>
           <p id="cityStatus" class="status-text" aria-live="polite"></p>
           <div id="cityResults" class="city-results"></div>
+          <p class="places-credit">Place list from <a href="https://www.geonames.org" target="_blank" rel="noopener">GeoNames</a> (geonames.org), CC BY 4.0. Modified: split into small files.</p>
 
           <label id="rememberLocationRow" class="remember-row" hidden>
             <input type="checkbox" id="rememberLocationCheckbox">
@@ -853,6 +854,8 @@
             <input type="checkbox" id="tzConvShowOnEventsBox">
             <span id="tzConvShowOnEventsText"></span>
           </label>
+
+          <p class="places-credit">Place list from <a href="https://www.geonames.org" target="_blank" rel="noopener">GeoNames</a> (geonames.org), CC BY 4.0. Modified: split into small files.</p>
 
           <div class="tz-button-row">
             <button type="button" id="tzConvNow" class="link-button" data-i18n="tzNowBtn">Use current date and time</button>

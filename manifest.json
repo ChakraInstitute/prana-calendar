@@ -1,6 +1,6 @@
 {
-  "name": "InnerTuning — Prana Calendar",
-  "short_name": "InnerTuning",
+  "name": "Prana Calendar",
+  "short_name": "Prana Calendar",
   "description": "Daily chakra, mantra and breath-practice guidance from the Chakra Institute.",
   "start_url": "./index.html",
   "scope": "./",

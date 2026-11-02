@@ -2447,3 +2447,5 @@ button:disabled:hover { border-color: var(--border); }
   accent-color: var(--accent);
 }
 #tzConvFromStatus:empty, #tzConvToStatus:empty, #tzConvFromResults:empty, #tzConvToResults:empty { display: none; }
+.places-credit { font-size: 0.72rem; color: var(--muted); margin: 0.2rem 0 0.6rem; line-height: 1.35; }
+.places-credit a { color: var(--muted); }
