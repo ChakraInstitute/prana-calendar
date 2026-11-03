@@ -191,6 +191,42 @@ async function pcPlacesSearchWithRegionFromText(text, limit, knownOnly) {
   return [];
 }
 
+// --- typing a country name -------------------------------------------------
+// The list holds places, not countries, so "netherlands" would otherwise find
+// places that merely START with those letters (Nederland in Texas...). When the
+// text is a country name, that country's biggest places (places/v1/countries.json,
+// built by tools/buildCountryTops.js) are offered first.
+const PC_COUNTRY_NAME_ALIASES = {
+  holland: 'NL', nederland: 'NL', deutschland: 'DE', espana: 'ES', italia: 'IT', schweiz: 'CH', suisse: 'CH',
+  osterreich: 'AT', belgie: 'BE', belgique: 'BE', brasil: 'BR', america: 'US', 'united states of america': 'US',
+  england: 'GB', scotland: 'GB', wales: 'GB', britain: 'GB', 'great britain': 'GB', usa: 'US', us: 'US', uk: 'GB', uae: 'AE',
+};
+const pcPlacesStripThe = (t) => t.replace(/^the /, '');
+
+async function pcPlacesCountryCodeFor(text) {
+  const t = pcPlacesStripThe(text);
+  if (!t) return null;
+  if (PC_COUNTRY_NAME_ALIASES[t]) return PC_COUNTRY_NAME_ALIASES[t];
+  const meta = await pcPlacesFile('meta.json');
+  for (const code of Object.keys(meta.countries)) {
+    if (pcPlacesStripThe(pcPlacesNormalize(meta.countries[code])) === t) return code;
+  }
+  return null;
+}
+
+async function pcPlacesCountryCities(code) {
+  const [meta, tops] = await Promise.all([pcPlacesFile('meta.json'), pcPlacesFile('countries.json').catch(() => ({}))]);
+  return (tops[code] || []).map((row) => {
+    const timezone = meta.timeZones[row[5]];
+    if (!timezone || !pcPlacesIsValidZone(timezone)) return null;
+    const regionName = meta.regions[row[1] + '.' + row[2]];
+    const countryName = meta.countries[row[1]] || row[1];
+    const area = [regionName && pcPlacesNormalize(regionName) !== pcPlacesNormalize(row[0]) ? regionName : null, countryName]
+      .filter(Boolean).join(', ');
+    return { label: row[0] + (area ? ', ' + area : ''), area, latitude: row[3], longitude: row[4], timezone };
+  }).filter(Boolean);
+}
+
 /**
  * Search the app's own place list.
  * "hou" / "Houston, TX" / "houston texas" -> matching places, best first.
@@ -199,10 +235,25 @@ async function pcPlacesSearchWithRegionFromText(text, limit, knownOnly) {
  */
 async function pcGeocodeCity(query) {
   const parsed = pcPlacesParseQuery(query);
-  const text = parsed.text, region = parsed.region;
+  let text = parsed.text, region = parsed.region;
   const limit = 6;
   if (text.length < 2) return [];
   try {
+    // "Netherlands, Amsterdam" (country first): turn it round to "Amsterdam, Netherlands"
+    if (region && !(await pcPlacesCountryCodeFor(region)) && (await pcPlacesCountryCodeFor(text))) {
+      const swap = text; text = region; region = swap;
+    }
+    // A whole country name typed on its own: offer that country's main cities first,
+    // then any place with exactly that name ("Mexico" the country, and Mexico, Missouri).
+    const countryCode = region ? null : await pcPlacesCountryCodeFor(text);
+    if (countryCode) {
+      const cities = await pcPlacesCountryCities(countryCode);
+      if (cities.length) {
+        const exact = (await pcPlacesSearchList(text, '', 30)).filter((p) => pcPlacesNormalize(p.label.split(',')[0]) === text);
+        const seen = new Set();
+        return cities.concat(exact).filter((p) => (seen.has(p.label) ? false : seen.add(p.label))).slice(0, 8);
+      }
+    }
     const spaced = !region && text.includes(' ');
     const withState = spaced ? await pcPlacesSearchWithRegionFromText(text, limit, true) : [];
     if (withState.length) return withState;

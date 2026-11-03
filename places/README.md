@@ -62,3 +62,7 @@ Put the `places` folder in the website's public folder. Give it a long cache tim
 ## A note for another Claude chat
 
 "This is a ready-made, free city lookup for birth places. Please read README.md first. Do not call any outside geocoding service. Use `places/v1/` as described, show the GeoNames credit, and reuse `normalize` exactly as written so the file keys match. `citySearch.reference.js` is a working example in JavaScript; port it to this app's language and structure if needed."
+
+## Added for Prana Calendar: typing a country name
+
+`places/v1/countries.json` holds each country's six biggest places (same row format as the other files). When someone types a whole country name ("Netherlands", "France", "USA"), the app offers those cities first instead of places that merely start with the same letters. It is built from the other files by `tools/buildCountryTops.js` in the app folder: after rebuilding the places files, run `node tools/buildCountryTops.js`. The matching code is in `js/geocode.js`.
