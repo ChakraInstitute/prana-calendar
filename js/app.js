@@ -3962,6 +3962,8 @@
   // root, so that's the only file anyone needs to touch to update it.
   // -------------------------------------------------------------------------
   function initSplash() {
+    // Splash turned off for now. Delete the next line to bring it back.
+    return;
     if (!els.splashOverlay) return;
 
     // The logo image is optional — if images/chakra-institute-logo.jpg
