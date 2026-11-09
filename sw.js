@@ -23,7 +23,7 @@
  * >>> RELEASE CHECKLIST: bump CACHE_VERSION below on every update. <<<
  */
 
-const CACHE_VERSION = 'prana-2026-11-03-1';
+const CACHE_VERSION = 'prana-2026-11-09-1';
 const CACHE_NAME = 'pc-cache-' + CACHE_VERSION;
 const PLACES_CACHE = 'pc-places-v1'; // deliberately NOT prefixed 'pc-cache-' so releases do not delete it
 
